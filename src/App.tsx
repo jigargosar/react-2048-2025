@@ -23,21 +23,21 @@ const initialGrid: Grid = [
     [0, 64, 0, 128],
 ];
 
-// Helper to generate unique tile IDs
-let tileIdCounter = 0;
-function getNextTileId() {
-    return `tile-${tileIdCounter++}`;
-}
-
 // Convert grid to tile view state
-function gridToTiles(grid: Grid): Tile[] {
+function gridToTiles(grid: Grid, idMap: Map<string, string>, getNextTileId: () => string): Tile[] {
     const tiles: Tile[] = [];
     for (let y = 0; y < grid.length; y++) {
         for (let x = 0; x < grid[y].length; x++) {
             const value = grid[y][x];
             if (value !== 0) {
+                const key = `${value}-${x}-${y}`;
+                let id = idMap.get(key);
+                if (!id) {
+                    id = getNextTileId();
+                    idMap.set(key, id);
+                }
                 tiles.push({
-                    id: getNextTileId(),
+                    id,
                     value,
                     pos: { x, y },
                 });
@@ -106,12 +106,18 @@ function renderGrid(tiles: Tile[], animating: boolean) {
 
 function App() {
     const [grid, setGrid] = useState<Grid>(initialGrid);
-    const [tiles, setTiles] = useState<Tile[]>(gridToTiles(initialGrid));
+    const [tiles, setTiles] = useState<Tile[]>([]);
     const [animating, setAnimating] = useState(false);
     const gridRef = useRef<Grid>(initialGrid);
+    const tileIdCounter = useRef(0);
+    const idMapRef = useRef<Map<string, string>>(new Map());
+
+    // Helper to generate unique tile IDs using useRef
+    const getNextTileId = () => `tile-${tileIdCounter.current++}`;
 
     useEffect(() => {
-        setTiles(gridToTiles(grid));
+        // Update tiles when grid changes
+        setTiles(gridToTiles(grid, idMapRef.current, getNextTileId));
         gridRef.current = grid;
     }, [grid]);
 
