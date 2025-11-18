@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 function posToGridArea({ x, y }: { x: number; y: number }) {
     return {
@@ -35,8 +35,6 @@ export default function TileSlideDemo() {
         state: 'static', // 'static' | 'moving'
         dir: null as null | 'up' | 'down' | 'left' | 'right',
     });
-    const raf1 = useRef<number | null>(null);
-    const raf2 = useRef<number | null>(null);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,27 +43,20 @@ export default function TileSlideDemo() {
             e.preventDefault();
             const newDest = computeDest(dir, tile.pos);
             if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) return;
-            // Cancel any pending rAFs
-            if (raf1.current) cancelAnimationFrame(raf1.current);
-            if (raf2.current) cancelAnimationFrame(raf2.current);
             // Snap to current destination (static)
             setTile(t => ({ ...t, state: 'static' }));
-            raf1.current = requestAnimationFrame(() => {
-                raf2.current = requestAnimationFrame(() => {
-                    setTile({
-                        pos: newDest,
-                        dest: newDest,
-                        state: 'moving',
-                        dir,
-                    });
+            requestAnimationFrame(() => {
+                setTile({
+                    pos: newDest,
+                    dest: newDest,
+                    state: 'moving',
+                    dir,
                 });
             });
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
-            if (raf1.current) cancelAnimationFrame(raf1.current);
-            if (raf2.current) cancelAnimationFrame(raf2.current);
         };
     }, [tile.pos]);
 
