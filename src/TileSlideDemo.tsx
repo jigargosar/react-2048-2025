@@ -17,10 +17,10 @@ export default function TileSlideDemo() {
         const handleKeyDown = (e: KeyboardEvent) => {
             setPos((prev: { x: number; y: number }) => {
                 let { x, y } = prev;
-                if (e.key === 'ArrowUp') y = Math.max(0, y - 1);
-                if (e.key === 'ArrowDown') y = Math.min(gridRows - 1, y + 1);
-                if (e.key === 'ArrowLeft') x = Math.max(0, x - 1);
-                if (e.key === 'ArrowRight') x = Math.min(gridCols - 1, x + 1);
+                if (e.key === 'ArrowUp') y = 0;
+                if (e.key === 'ArrowDown') y = gridRows - 1;
+                if (e.key === 'ArrowLeft') x = 0;
+                if (e.key === 'ArrowRight') x = gridCols - 1;
                 return { x, y };
             });
         };
