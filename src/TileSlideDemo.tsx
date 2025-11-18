@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 
-function posToGridArea({ x, y }: { x: number; y: number }) {
+type Pos = { x: number; y: number };
+
+function posToGridArea(pos: Pos) {
     return {
-        gridColumn: x + 1,
-        gridRow: y + 1,
+        gridColumn: pos.x + 1,
+        gridRow: pos.y + 1,
     };
 }
 
 const gridCols = 4;
 const gridRows = 4;
 
-function computeDest(dir: string, pos: { x: number; y: number }) {
+function computeDest(dir: string, pos: Pos): Pos {
     switch (dir) {
         case 'up': return { x: pos.x, y: 0 };
         case 'down': return { x: pos.x, y: gridRows - 1 };
@@ -30,9 +32,9 @@ function keyToDir(key: string): 'up' | 'down' | 'left' | 'right' | null {
 
 export default function TileSlideDemo() {
     const [tile, setTile] = useState({
-        pos: { x: 0, y: 0 },
-        dest: { x: 0, y: 0 },
-        state: 'static', // 'static' | 'moving'
+        pos: { x: 0, y: 0 } as Pos,
+        dest: { x: 0, y: 0 } as Pos,
+        state: 'static' as 'static' | 'moving',
         dir: null as null | 'up' | 'down' | 'left' | 'right',
     });
 
