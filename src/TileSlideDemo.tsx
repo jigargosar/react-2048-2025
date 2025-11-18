@@ -25,16 +25,6 @@ const grid: Pos[][] = Array.from({ length: gridRows }, (_, y) =>
 );
 const allPos: Pos[] = grid.flat();
 
-function computeDest(dir: Dir, pos: Pos): Pos {
-    switch (dir) {
-        case 'up': return { x: pos.x, y: 0 };
-        case 'down': return { x: pos.x, y: gridRows - 1 };
-        case 'left': return { x: 0, y: pos.y };
-        case 'right': return { x: gridCols - 1, y: pos.y };
-        default: return pos;
-    }
-}
-
 function keyToDir(key: string): Dir | null {
     if (key === 'ArrowUp') return 'up';
     if (key === 'ArrowDown') return 'down';
@@ -54,7 +44,7 @@ const initialTiles: Tile[] = [
     { pos: { x: 3, y: 0 }, dest: { x: 3, y: 0 }, state: 'static', value: 256 },
 ];
 
-function slideLeft(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
+function slideLeft(tiles: Tile[]): Tile[] {
     // Group tiles by row
     const rows: Tile[][] = Array.from({ length: gridRows }, () => []);
     tiles.forEach(tile => rows[tile.pos.y].push(tile));
@@ -71,7 +61,7 @@ function slideLeft(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
     });
 }
 
-function rotateTiles(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
+function rotateTiles(tiles: Tile[]): Tile[] {
     // Rotates positions 90deg clockwise
     return tiles.map(tile => ({
         ...tile,
@@ -79,7 +69,7 @@ function rotateTiles(tiles: Tile[], gridCols: number, gridRows: number): Tile[] 
         dest: { x: gridRows - 1 - tile.pos.y, y: tile.pos.x },
     }));
 }
-function rotateTilesCCW(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
+function rotateTilesCCW(tiles: Tile[]): Tile[] {
     // Rotates positions 90deg counterclockwise
     return tiles.map(tile => ({
         ...tile,
@@ -87,7 +77,7 @@ function rotateTilesCCW(tiles: Tile[], gridCols: number, gridRows: number): Tile
         dest: { x: tile.pos.y, y: gridCols - 1 - tile.pos.x },
     }));
 }
-function flipTiles(tiles: Tile[], gridCols: number): Tile[] {
+function flipTiles(tiles: Tile[]): Tile[] {
     // Flips horizontally
     return tiles.map(tile => ({
         ...tile,
@@ -96,30 +86,30 @@ function flipTiles(tiles: Tile[], gridCols: number): Tile[] {
     }));
 }
 
-function transformForDirection(tiles: Tile[], dir: Dir, gridCols: number, gridRows: number): Tile[] {
+function transformForDirection(tiles: Tile[], dir: Dir): Tile[] {
     switch (dir) {
         case 'left':
             return tiles;
         case 'right':
-            return flipTiles(tiles, gridCols);
+            return flipTiles(tiles);
         case 'up':
-            return rotateTilesCCW(tiles, gridCols, gridRows);
+            return rotateTilesCCW(tiles);
         case 'down':
-            return rotateTiles(tiles, gridCols, gridRows);
+            return rotateTiles(tiles);
         default:
             return tiles;
     }
 }
-function inverseTransformForDirection(tiles: Tile[], dir: Dir, gridCols: number, gridRows: number): Tile[] {
+function inverseTransformForDirection(tiles: Tile[], dir: Dir): Tile[] {
     switch (dir) {
         case 'left':
             return tiles;
         case 'right':
-            return flipTiles(tiles, gridCols);
+            return flipTiles(tiles);
         case 'up':
-            return rotateTiles(tiles, gridCols, gridRows);
+            return rotateTiles(tiles);
         case 'down':
-            return rotateTilesCCW(tiles, gridCols, gridRows);
+            return rotateTilesCCW(tiles);
         default:
             return tiles;
     }
@@ -134,11 +124,11 @@ export default function TileSlideDemo() {
             if (!dir) return;
             e.preventDefault();
             // Transform tiles for leftward slide
-            let workingTiles = transformForDirection(tiles, dir, gridCols, gridRows);
+            let workingTiles = transformForDirection(tiles, dir);
             // Slide left
-            workingTiles = slideLeft(workingTiles, gridCols, gridRows);
+            workingTiles = slideLeft(workingTiles);
             // Transform tiles back to original orientation
-            workingTiles = inverseTransformForDirection(workingTiles, dir, gridCols, gridRows);
+            workingTiles = inverseTransformForDirection(workingTiles, dir);
             // Snap all tiles to static
             setTiles(workingTiles.map(tile => ({ ...tile, state: 'static' as TileState })));
             requestAnimationFrame(() => {
