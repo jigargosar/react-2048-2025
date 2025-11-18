@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 
+
 type Row = number[];
 type Grid = Row[];
-// type Position = { x: number; y: number };
+type Position = { x: number; y: number };
 
-// const GRID_SIZE = 4;
+const GRID_SIZE = 4;
 
-// const gridPositions: Position[] = Array.from(
-//   { length: GRID_SIZE * GRID_SIZE },
-//   (_, i) => ({
-//     x: i % GRID_SIZE,
-//     y: Math.floor(i / GRID_SIZE),
-//   }),
-// );
+const gridPositions: Position[] = Array.from(
+  { length: GRID_SIZE * GRID_SIZE },
+  (_, i) => ({
+    x: i % GRID_SIZE,
+    y: Math.floor(i / GRID_SIZE),
+  })
+);
 
 const initialGrid: Grid = [
   [2, 0, 0, 2],
@@ -29,25 +30,60 @@ function slideLeft(grid: Grid): Grid {
   });
 }
 
+
 function renderGrid(grid: Grid, animating: boolean) {
-  return (
-    <div className="grid grid-cols-4 grid-rows-4 gap-2 bg-gray-700 p-2 rounded-xl">
-      {grid.map((row, rowIdx) =>
-        row.map((value, colIdx) => (
+  // Render static background tiles
+  const backgroundTiles = gridPositions.map((pos, idx) => (
+    <div
+      key={"bg-" + idx}
+      style={{
+        gridArea: `${pos.y + 1} / ${pos.x + 1} / ${pos.y + 2} / ${pos.x + 2}`,
+      }}
+      className="w-16 h-16 flex items-center justify-center rounded-lg border-2 border-gray-900 bg-gray-800 text-gray-600"
+    />
+  ));
+
+  // Render only non-zero tiles
+  const tiles = [];
+  for (let y = 0; y < GRID_SIZE; y++) {
+    for (let x = 0; x < GRID_SIZE; x++) {
+      const value = grid[y][x];
+      if (value !== 0) {
+        tiles.push(
           <div
-            key={rowIdx * 4 + colIdx}
-            className={`w-16 h-16 flex items-center justify-center rounded-lg font-bold text-lg border-2 border-gray-900 transition-transform duration-300
-              ${
-                value === 0
-                  ? 'bg-gray-800 text-gray-600'
-                  : 'bg-yellow-600 text-gray-900'
-              }
-              ${animating && value !== 0 ? 'transform -translate-x-16' : ''}`}
+            key={`tile-${y}-${x}`}
+            style={{
+              gridArea: `${y + 1} / ${x + 1} / ${y + 2} / ${x + 2}`,
+              zIndex: 2,
+              transition: 'transform 0.3s',
+              transform: animating ? 'scale(1.1)' : 'scale(1)',
+            }}
+            className="w-16 h-16 flex items-center justify-center rounded-lg font-bold text-lg border-2 border-gray-900 bg-yellow-600 text-gray-900 absolute"
           >
-            {value !== 0 ? value : ''}
+            {value}
           </div>
-        )),
-      )}
+        );
+      }
+    }
+  }
+
+  return (
+    <div
+      className="relative grid"
+      style={{
+        display: 'grid',
+        gridTemplateRows: `repeat(${GRID_SIZE}, 4rem)`,
+        gridTemplateColumns: `repeat(${GRID_SIZE}, 4rem)`,
+        gap: '0.5rem',
+        background: '#374151',
+        padding: '0.5rem',
+        borderRadius: '1rem',
+        width: `${GRID_SIZE * 4.5}rem`,
+        height: `${GRID_SIZE * 4.5}rem`,
+      }}
+    >
+      {backgroundTiles}
+      {tiles}
     </div>
   );
 }
