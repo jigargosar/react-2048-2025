@@ -6,10 +6,11 @@ type Tile = {
   value: number
   row: number
   col: number
+  visualRow: number
   visualCol: number
 }
 
-type Direction = 'left' | 'right'
+type Direction = 'left' | 'right' | 'up' | 'down'
 
 const GRID_SIZE = 4
 
@@ -56,12 +57,59 @@ function slideRight(tiles: Tile[]): Tile[] {
   return newTiles
 }
 
+function slideUp(tiles: Tile[]): Tile[] {
+  const cols: Tile[][] = Array.from({ length: GRID_SIZE }, () => [])
+
+  tiles.forEach(tile => {
+    cols[tile.col].push(tile)
+  })
+
+  const newTiles: Tile[] = []
+  cols.forEach((colTiles, colIndex) => {
+    const sorted = colTiles.sort((a, b) => a.visualRow - b.visualRow)
+    sorted.forEach((tile, index) => {
+      newTiles.push({
+        ...tile,
+        row: index
+      })
+    })
+  })
+
+  return newTiles
+}
+
+function slideDown(tiles: Tile[]): Tile[] {
+  const cols: Tile[][] = Array.from({ length: GRID_SIZE }, () => [])
+
+  tiles.forEach(tile => {
+    cols[tile.col].push(tile)
+  })
+
+  const newTiles: Tile[] = []
+  cols.forEach((colTiles, colIndex) => {
+    const sorted = colTiles.sort((a, b) => b.visualRow - a.visualRow)
+    sorted.forEach((tile, index) => {
+      const newRow = GRID_SIZE - 1 - index
+      newTiles.push({
+        ...tile,
+        row: newRow
+      })
+    })
+  })
+
+  return newTiles
+}
+
 function slide(tiles: Tile[], direction: Direction): Tile[] {
   switch (direction) {
     case 'left':
       return slideLeft(tiles)
     case 'right':
       return slideRight(tiles)
+    case 'up':
+      return slideUp(tiles)
+    case 'down':
+      return slideDown(tiles)
     default:
       return tiles
   }
@@ -69,12 +117,12 @@ function slide(tiles: Tile[], direction: Direction): Tile[] {
 
 export default function TileSlideDemo2() {
   const [tiles, setTiles] = useState<Tile[]>([
-    { id: 1, value: 2, row: 0, col: 1, visualCol: 1 },
-    { id: 2, value: 4, row: 0, col: 3, visualCol: 3 },
-    { id: 3, value: 8, row: 1, col: 2, visualCol: 2 },
-    { id: 4, value: 16, row: 2, col: 0, visualCol: 0 },
-    { id: 5, value: 32, row: 2, col: 3, visualCol: 3 },
-    { id: 6, value: 64, row: 3, col: 1, visualCol: 1 }
+    { id: 1, value: 2, row: 0, col: 1, visualRow: 0, visualCol: 1 },
+    { id: 2, value: 4, row: 0, col: 3, visualRow: 0, visualCol: 3 },
+    { id: 3, value: 8, row: 1, col: 2, visualRow: 1, visualCol: 2 },
+    { id: 4, value: 16, row: 2, col: 0, visualRow: 2, visualCol: 0 },
+    { id: 5, value: 32, row: 2, col: 3, visualRow: 2, visualCol: 3 },
+    { id: 6, value: 64, row: 3, col: 1, visualRow: 3, visualCol: 1 }
   ])
   const [renderKey, setRenderKey] = useState(0)
 
@@ -85,23 +133,29 @@ export default function TileSlideDemo2() {
       direction = 'left'
     } else if (e.key === 'ArrowRight') {
       direction = 'right'
+    } else if (e.key === 'ArrowUp') {
+      direction = 'up'
+    } else if (e.key === 'ArrowDown') {
+      direction = 'down'
     }
 
     if (direction) {
-      // Step 1: Update col and increment key
+      // Step 1: Normalize positions and calculate new positions, increment key
       setTiles(tiles => {
         const normalized = tiles.map(tile => ({
           ...tile,
+          row: tile.visualRow,
           col: tile.visualCol
         }))
         return slide(normalized, direction!)
       })
       setRenderKey(k => k + 1)
 
-      // Step 2: After browser paints, update visualCol for animation
+      // Step 2: After browser paints, update visual positions for animation
       requestAnimationFrame(() => {
         setTiles(tiles => tiles.map(tile => ({
           ...tile,
+          visualRow: tile.row,
           visualCol: tile.col
         })))
       })
@@ -138,6 +192,7 @@ export default function TileSlideDemo2() {
         }}>
         {tiles.map(tile => {
           const offsetCols = tile.visualCol - tile.col
+          const offsetRows = tile.visualRow - tile.row
           return (
             <div
               key={tile.id}
@@ -148,7 +203,7 @@ export default function TileSlideDemo2() {
                 height: '100%',
                 padding: '5px',
                 boxSizing: 'border-box',
-                transform: `translateX(${offsetCols * 100}%)`,
+                transform: `translate(${offsetCols * 100}%, ${offsetRows * 100}%)`,
                 transition: 'transform 200ms ease-in-out'
               }}
             >
@@ -174,7 +229,7 @@ export default function TileSlideDemo2() {
       </div>
 
       <p style={{ marginTop: '20px', color: '#ccc' }}>
-        Press Left/Right Arrow to slide
+        Press Arrow keys to slide
       </p>
     </div>
   )
