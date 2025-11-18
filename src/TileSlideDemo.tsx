@@ -19,6 +19,11 @@ function posToGridArea(pos: Pos) {
 const gridCols = 4;
 const gridRows = 4;
 
+const grid: Pos[][] = Array.from({ length: gridRows }, (_, y) =>
+    Array.from({ length: gridCols }, (_, x) => ({ x, y }))
+);
+const allPos: Pos[] = grid.flat();
+
 function computeDest(dir: Dir, pos: Pos): Pos {
     switch (dir) {
         case 'up': return { x: pos.x, y: 0 };
@@ -90,18 +95,16 @@ export default function TileSlideDemo() {
                     background: '#eee',
                 }}
             >
-                {[...Array(gridRows)].flatMap((_, row) =>
-                    [...Array(gridCols)].map((_, col) => (
-                        <div
-                            key={row * gridCols + col}
-                            style={{
-                                ...posToGridArea({ x: col, y: row }),
-                                width: '100%',
-                                height: '100%',
-                            }}
-                        />
-                    )),
-                )}
+                {allPos.map(pos => (
+                    <div
+                        key={`${pos.x},${pos.y}`}
+                        style={{
+                            ...posToGridArea(pos),
+                            width: '100%',
+                            height: '100%',
+                        }}
+                    />
+                ))}
                 <div
                     style={{
                         gridColumn: 1,
