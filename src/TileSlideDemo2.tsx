@@ -5,6 +5,7 @@ type Tile = {
   value: number
   row: number
   col: number
+  visualCol: number
 }
 
 const GRID_SIZE = 4
@@ -22,7 +23,7 @@ function slideLeft(tiles: Tile[]): Tile[] {
     sorted.forEach((tile, index) => {
       newTiles.push({
         ...tile,
-        col: index
+        visualCol: index
       })
     })
   })
@@ -32,12 +33,12 @@ function slideLeft(tiles: Tile[]): Tile[] {
 
 export default function TileSlideDemo2() {
   const [tiles, setTiles] = useState<Tile[]>([
-    { id: 1, value: 2, row: 0, col: 1 },
-    { id: 2, value: 4, row: 0, col: 3 },
-    { id: 3, value: 8, row: 1, col: 2 },
-    { id: 4, value: 16, row: 2, col: 0 },
-    { id: 5, value: 32, row: 2, col: 3 },
-    { id: 6, value: 64, row: 3, col: 1 }
+    { id: 1, value: 2, row: 0, col: 1, visualCol: 1 },
+    { id: 2, value: 4, row: 0, col: 3, visualCol: 3 },
+    { id: 3, value: 8, row: 1, col: 2, visualCol: 2 },
+    { id: 4, value: 16, row: 2, col: 0, visualCol: 0 },
+    { id: 5, value: 32, row: 2, col: 3, visualCol: 3 },
+    { id: 6, value: 64, row: 3, col: 1, visualCol: 1 }
   ])
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,55 +59,58 @@ export default function TileSlideDemo2() {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      background: '#faf8ef'
+      background: '#1a1a1a'
     }}>
-      <h1 style={{ marginBottom: '20px' }}>Slide Left Test</h1>
+      <h1 style={{ marginBottom: '20px', color: '#fff' }}>Slide Left Test</h1>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${GRID_SIZE}, 80px)`,
-        gridTemplateRows: `repeat(${GRID_SIZE}, 80px)`,
-        gap: '10px',
-        padding: '10px',
-        background: '#bbada0',
+        gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+        gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+        gap: '0',
+        background: '#2d2d2d',
         borderRadius: '8px',
-        position: 'relative'
+        width: '400px',
+        height: '400px'
       }}>
-        {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              background: 'rgba(238, 228, 218, 0.35)',
-              borderRadius: '4px'
-            }}
-          />
-        ))}
-
-        {tiles.map(tile => (
-          <div
-            key={tile.id}
-            style={{
-              position: 'absolute',
-              width: '80px',
-              height: '80px',
-              background: '#edc22e',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
-              fontSize: '32px',
-              color: '#776e65',
-              transform: `translate(${tile.col * 90}px, ${tile.row * 90}px)`,
-              transition: 'transform 200ms ease-in-out'
-            }}
-          >
-            {tile.value}
-          </div>
-        ))}
+        {tiles.map(tile => {
+          const offsetCols = tile.visualCol - tile.col
+          return (
+            <div
+              key={tile.id}
+              style={{
+                gridColumn: tile.col + 1,
+                gridRow: tile.row + 1,
+                width: '100%',
+                height: '100%',
+                padding: '5px',
+                boxSizing: 'border-box',
+                transform: `translateX(${offsetCols * 100}%)`,
+                transition: 'transform 200ms ease-in-out'
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  background: '#4CAF50',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '32px',
+                  color: '#fff'
+                }}
+              >
+                {tile.value}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
-      <p style={{ marginTop: '20px', color: '#776e65' }}>
+      <p style={{ marginTop: '20px', color: '#ccc' }}>
         Press Left Arrow to slide
       </p>
     </div>
