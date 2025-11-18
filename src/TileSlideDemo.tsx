@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 type Pos = { x: number; y: number };
+type Dir = 'up' | 'down' | 'left' | 'right';
 
 function posToGridArea(pos: Pos) {
     return {
@@ -12,7 +13,7 @@ function posToGridArea(pos: Pos) {
 const gridCols = 4;
 const gridRows = 4;
 
-function computeDest(dir: string, pos: Pos): Pos {
+function computeDest(dir: Dir, pos: Pos): Pos {
     switch (dir) {
         case 'up': return { x: pos.x, y: 0 };
         case 'down': return { x: pos.x, y: gridRows - 1 };
@@ -22,7 +23,7 @@ function computeDest(dir: string, pos: Pos): Pos {
     }
 }
 
-function keyToDir(key: string): 'up' | 'down' | 'left' | 'right' | null {
+function keyToDir(key: string): Dir | null {
     if (key === 'ArrowUp') return 'up';
     if (key === 'ArrowDown') return 'down';
     if (key === 'ArrowLeft') return 'left';
@@ -35,7 +36,7 @@ export default function TileSlideDemo() {
         pos: { x: 0, y: 0 } as Pos,
         dest: { x: 0, y: 0 } as Pos,
         state: 'static' as 'static' | 'moving',
-        dir: null as null | 'up' | 'down' | 'left' | 'right',
+        dir: null as null | Dir,
     });
 
     useEffect(() => {
