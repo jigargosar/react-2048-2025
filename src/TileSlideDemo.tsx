@@ -7,6 +7,7 @@ type Tile = {
     pos: Pos;
     dest: Pos;
     state: TileState;
+    value: number;
 };
 
 function posToGridArea(pos: Pos) {
@@ -43,9 +44,14 @@ function keyToDir(key: string): Dir | null {
 }
 
 const initialTiles: Tile[] = [
-    { pos: { x: 0, y: 0 }, dest: { x: 0, y: 0 }, state: 'static' },
-    { pos: { x: 2, y: 1 }, dest: { x: 2, y: 1 }, state: 'static' },
-    { pos: { x: 3, y: 3 }, dest: { x: 3, y: 3 }, state: 'static' },
+    { pos: { x: 0, y: 0 }, dest: { x: 0, y: 0 }, state: 'static', value: 2 },
+    { pos: { x: 2, y: 1 }, dest: { x: 2, y: 1 }, state: 'static', value: 4 },
+    { pos: { x: 3, y: 3 }, dest: { x: 3, y: 3 }, state: 'static', value: 8 },
+    { pos: { x: 1, y: 2 }, dest: { x: 1, y: 2 }, state: 'static', value: 16 },
+    { pos: { x: 1, y: 0 }, dest: { x: 1, y: 0 }, state: 'static', value: 32 },
+    { pos: { x: 0, y: 3 }, dest: { x: 0, y: 3 }, state: 'static', value: 64 },
+    { pos: { x: 2, y: 2 }, dest: { x: 2, y: 2 }, state: 'static', value: 128 },
+    { pos: { x: 3, y: 0 }, dest: { x: 3, y: 0 }, state: 'static', value: 256 },
 ];
 
 function slideLeft(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
@@ -197,7 +203,7 @@ export default function TileSlideDemo() {
                             transition: tile.state === 'moving' ? 'transform 0.2s linear' : 'none',
                         }}
                     >
-                        2
+                        {tile.value}
                     </div>
                 ))}
             </div>
