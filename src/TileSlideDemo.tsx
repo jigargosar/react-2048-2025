@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 function posToGridArea({ x, y }: { x: number; y: number }) {
     // gridColumn and gridRow are 1-based in CSS Grid
