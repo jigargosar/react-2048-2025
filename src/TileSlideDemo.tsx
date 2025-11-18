@@ -7,7 +7,6 @@ type Tile = {
     pos: Pos;
     dest: Pos;
     state: TileState;
-    dir: Dir | null;
 };
 
 function posToGridArea(pos: Pos) {
@@ -43,7 +42,6 @@ export default function TileSlideDemo() {
         pos: { x: 0, y: 0 },
         dest: { x: 0, y: 0 },
         state: 'static',
-        dir: null,
     });
 
     useEffect(() => {
@@ -60,7 +58,6 @@ export default function TileSlideDemo() {
                     pos: newDest,
                     dest: newDest,
                     state: 'moving',
-                    dir,
                 });
             });
         };
