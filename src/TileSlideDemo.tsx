@@ -15,7 +15,7 @@ export default function TileSlideDemo() {
                         height: "60px",
                         background: "#ffcc00",
                         borderRadius: "8px",
-                        transition: "left 0.4s cubic-bezier(.68,-0.55,.27,1.55)",
+                        transition: "left 0.4s linear",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
