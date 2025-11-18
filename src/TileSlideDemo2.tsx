@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { flushSync } from 'react-dom'
 
 type Tile = {
   id: number
@@ -7,6 +8,8 @@ type Tile = {
   col: number
   visualCol: number
 }
+
+type Direction = 'left' | 'right'
 
 const GRID_SIZE = 4
 
@@ -19,16 +22,49 @@ function slideLeft(tiles: Tile[]): Tile[] {
 
   const newTiles: Tile[] = []
   rows.forEach((rowTiles, rowIndex) => {
-    const sorted = rowTiles.sort((a, b) => a.col - b.col)
+    const sorted = rowTiles.sort((a, b) => a.visualCol - b.visualCol)
     sorted.forEach((tile, index) => {
       newTiles.push({
         ...tile,
-        visualCol: index
+        col: index
       })
     })
   })
 
   return newTiles
+}
+
+function slideRight(tiles: Tile[]): Tile[] {
+  const rows: Tile[][] = Array.from({ length: GRID_SIZE }, () => [])
+
+  tiles.forEach(tile => {
+    rows[tile.row].push(tile)
+  })
+
+  const newTiles: Tile[] = []
+  rows.forEach((rowTiles, rowIndex) => {
+    const sorted = rowTiles.sort((a, b) => b.visualCol - a.visualCol)
+    sorted.forEach((tile, index) => {
+      const newCol = GRID_SIZE - 1 - index
+      newTiles.push({
+        ...tile,
+        col: newCol
+      })
+    })
+  })
+
+  return newTiles
+}
+
+function slide(tiles: Tile[], direction: Direction): Tile[] {
+  switch (direction) {
+    case 'left':
+      return slideLeft(tiles)
+    case 'right':
+      return slideRight(tiles)
+    default:
+      return tiles
+  }
 }
 
 export default function TileSlideDemo2() {
@@ -40,10 +76,39 @@ export default function TileSlideDemo2() {
     { id: 5, value: 32, row: 2, col: 3, visualCol: 3 },
     { id: 6, value: 64, row: 3, col: 1, visualCol: 1 }
   ])
+  const [renderKey, setRenderKey] = useState(0)
 
   const handleKeyDown = (e: KeyboardEvent) => {
+    let direction: Direction | null = null
+
     if (e.key === 'ArrowLeft') {
-      setTiles(tiles => slideLeft(tiles))
+      direction = 'left'
+    } else if (e.key === 'ArrowRight') {
+      direction = 'right'
+    }
+
+    if (direction) {
+      // Step 1: Update col and visualCol to current visualCol, increment key
+      flushSync(() => {
+        setTiles(tiles => tiles.map(tile => ({
+          ...tile,
+          col: tile.visualCol
+        })))
+        setRenderKey(k => k + 1)
+      })
+
+      // Step 2: Calculate new positions
+      flushSync(() => {
+        setTiles(tiles => slide(tiles, direction!))
+      })
+
+      // Step 3: After browser paints, update visualCol for animation
+      requestAnimationFrame(() => {
+        setTiles(tiles => tiles.map(tile => ({
+          ...tile,
+          visualCol: tile.col
+        })))
+      })
     }
   }
 
@@ -63,16 +128,18 @@ export default function TileSlideDemo2() {
     }}>
       <h1 style={{ marginBottom: '20px', color: '#fff' }}>Slide Left Test</h1>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-        gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
-        gap: '0',
-        background: '#2d2d2d',
-        borderRadius: '8px',
-        width: '400px',
-        height: '400px'
-      }}>
+      <div
+        key={renderKey}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+          gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+          gap: '0',
+          background: '#2d2d2d',
+          borderRadius: '8px',
+          width: '400px',
+          height: '400px'
+        }}>
         {tiles.map(tile => {
           const offsetCols = tile.visualCol - tile.col
           return (
@@ -111,7 +178,7 @@ export default function TileSlideDemo2() {
       </div>
 
       <p style={{ marginTop: '20px', color: '#ccc' }}>
-        Press Left Arrow to slide
+        Press Left/Right Arrow to slide
       </p>
     </div>
   )
