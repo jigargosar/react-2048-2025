@@ -2,6 +2,13 @@ import { useEffect, useState } from 'react';
 
 type Pos = { x: number; y: number };
 type Dir = 'up' | 'down' | 'left' | 'right';
+type TileState = 'static' | 'moving';
+type Tile = {
+    pos: Pos;
+    dest: Pos;
+    state: TileState;
+    dir: Dir | null;
+};
 
 function posToGridArea(pos: Pos) {
     return {
@@ -32,11 +39,11 @@ function keyToDir(key: string): Dir | null {
 }
 
 export default function TileSlideDemo() {
-    const [tile, setTile] = useState({
-        pos: { x: 0, y: 0 } as Pos,
-        dest: { x: 0, y: 0 } as Pos,
-        state: 'static' as 'static' | 'moving',
-        dir: null as null | Dir,
+    const [tile, setTile] = useState<Tile>({
+        pos: { x: 0, y: 0 },
+        dest: { x: 0, y: 0 },
+        state: 'static',
+        dir: null,
     });
 
     useEffect(() => {
