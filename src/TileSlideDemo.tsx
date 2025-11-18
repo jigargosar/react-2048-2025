@@ -4,7 +4,6 @@ type Pos = { x: number; y: number };
 type Dir = 'up' | 'down' | 'left' | 'right';
 type TileState = 'static' | 'moving';
 type Tile = {
-    id: number;
     pos: Pos;
     dest: Pos;
     state: TileState;
@@ -35,14 +34,14 @@ function keyToDir(key: string): Dir | null {
 }
 
 const initialTiles: Tile[] = [
-    { id: 1, pos: { x: 0, y: 0 }, dest: { x: 0, y: 0 }, state: 'static', value: 2 },
-    { id: 2, pos: { x: 2, y: 1 }, dest: { x: 2, y: 1 }, state: 'static', value: 4 },
-    { id: 3, pos: { x: 3, y: 3 }, dest: { x: 3, y: 3 }, state: 'static', value: 8 },
-    { id: 4, pos: { x: 1, y: 2 }, dest: { x: 1, y: 2 }, state: 'static', value: 16 },
-    { id: 5, pos: { x: 1, y: 0 }, dest: { x: 1, y: 0 }, state: 'static', value: 32 },
-    { id: 6, pos: { x: 0, y: 3 }, dest: { x: 0, y: 3 }, state: 'static', value: 64 },
-    { id: 7, pos: { x: 2, y: 2 }, dest: { x: 2, y: 2 }, state: 'static', value: 128 },
-    { id: 8, pos: { x: 3, y: 0 }, dest: { x: 3, y: 0 }, state: 'static', value: 256 },
+    { pos: { x: 0, y: 0 }, dest: { x: 0, y: 0 }, state: 'static', value: 2 },
+    { pos: { x: 2, y: 1 }, dest: { x: 2, y: 1 }, state: 'static', value: 4 },
+    { pos: { x: 3, y: 3 }, dest: { x: 3, y: 3 }, state: 'static', value: 8 },
+    { pos: { x: 1, y: 2 }, dest: { x: 1, y: 2 }, state: 'static', value: 16 },
+    { pos: { x: 1, y: 0 }, dest: { x: 1, y: 0 }, state: 'static', value: 32 },
+    { pos: { x: 0, y: 3 }, dest: { x: 0, y: 3 }, state: 'static', value: 64 },
+    { pos: { x: 2, y: 2 }, dest: { x: 2, y: 2 }, state: 'static', value: 128 },
+    { pos: { x: 3, y: 0 }, dest: { x: 3, y: 0 }, state: 'static', value: 256 },
 ];
 
 function slideLeft(tiles: Tile[]): Tile[] {
@@ -164,9 +163,9 @@ export default function TileSlideDemo() {
                         }}
                     />
                 ))}
-                {[...tiles].sort((a, b) => a.pos.y - b.pos.y || a.pos.x - b.pos.x).map(tile => (
+                {tiles.map((tile, idx) => (
                     <div
-                        key={tile.id}
+                        key={idx}
                         style={{
                             gridColumn: 1,
                             gridRow: 1,
