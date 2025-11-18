@@ -56,9 +56,16 @@ export default function TileSlideDemo() {
             const dir = keyToDir(e.key);
             if (!dir) return;
             e.preventDefault();
-            // Compute new destinations for all tiles
+            // Compute new destinations for all tiles, ensuring no overlap
+            const claimed = new Set<string>();
             const nextTiles = tiles.map(tile => {
                 const newDest = computeDest(dir, tile.pos);
+                const destKey = `${newDest.x},${newDest.y}`;
+                if (claimed.has(destKey)) {
+                    // Destination already claimed, stay in place
+                    return { ...tile, state: 'static' as TileState };
+                }
+                claimed.add(destKey);
                 if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) {
                     return { ...tile, state: 'static' as TileState };
                 }
@@ -66,8 +73,15 @@ export default function TileSlideDemo() {
             });
             setTiles(nextTiles);
             requestAnimationFrame(() => {
+                const claimedAnim = new Set<string>();
                 setTiles(nextTiles.map(tile => {
                     const newDest = computeDest(dir, tile.pos);
+                    const destKey = `${newDest.x},${newDest.y}`;
+                    if (claimedAnim.has(destKey)) {
+                        // Destination already claimed, stay in place
+                        return { ...tile, state: 'static' as TileState };
+                    }
+                    claimedAnim.add(destKey);
                     if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) {
                         return { ...tile, state: 'static' as TileState };
                     }
