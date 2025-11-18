@@ -42,35 +42,49 @@ function keyToDir(key: string): Dir | null {
     return null;
 }
 
+const initialTiles: Tile[] = [
+    { pos: { x: 0, y: 0 }, dest: { x: 0, y: 0 }, state: 'static' },
+    { pos: { x: 2, y: 1 }, dest: { x: 2, y: 1 }, state: 'static' },
+    { pos: { x: 3, y: 3 }, dest: { x: 3, y: 3 }, state: 'static' },
+];
+
 export default function TileSlideDemo() {
-    const [tile, setTile] = useState<Tile>({
-        pos: { x: 0, y: 0 },
-        dest: { x: 0, y: 0 },
-        state: 'static',
-    });
+    const [tiles, setTiles] = useState<Tile[]>(initialTiles);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             const dir = keyToDir(e.key);
             if (!dir) return;
             e.preventDefault();
-            const newDest = computeDest(dir, tile.pos);
-            if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) return;
-            // Snap to current destination (static)
-            setTile(t => ({ ...t, state: 'static' }));
+            // Compute new destinations for all tiles
+            const nextTiles = tiles.map(tile => {
+                const newDest = computeDest(dir, tile.pos);
+                if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) {
+                    return { ...tile, state: 'static' as TileState };
+                }
+                return { ...tile, state: 'static' as TileState };
+            });
+            setTiles(nextTiles);
             requestAnimationFrame(() => {
-                setTile({
-                    pos: newDest,
-                    dest: newDest,
-                    state: 'moving',
-                });
+                setTiles(nextTiles.map(tile => {
+                    const newDest = computeDest(dir, tile.pos);
+                    if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) {
+                        return { ...tile, state: 'static' as TileState };
+                    }
+                    return {
+                        ...tile,
+                        pos: newDest,
+                        dest: newDest,
+                        state: 'moving' as TileState,
+                    };
+                }));
             });
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [tile.pos]);
+    }, [tiles]);
 
     return (
         <div
@@ -105,28 +119,31 @@ export default function TileSlideDemo() {
                         }}
                     />
                 ))}
-                <div
-                    style={{
-                        gridColumn: 1,
-                        gridRow: 1,
-                        width: '100%',
-                        height: '100%',
-                        background: '#ffcc00',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '1.5rem',
-                        transform: `translateX(${tile.pos.x * 100}%) translateY(${tile.pos.y * 100}%)`,
-                        transition: tile.state === 'moving' ? 'transform 0.2s linear' : 'none',
-                    }}
-                >
-                    2
-                </div>
+                {tiles.map((tile, idx) => (
+                    <div
+                        key={idx}
+                        style={{
+                            gridColumn: 1,
+                            gridRow: 1,
+                            width: '100%',
+                            height: '100%',
+                            background: '#ffcc00',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 'bold',
+                            fontSize: '1.5rem',
+                            transform: `translateX(${tile.pos.x * 100}%) translateY(${tile.pos.y * 100}%)`,
+                            transition: tile.state === 'moving' ? 'transform 0.2s linear' : 'none',
+                        }}
+                    >
+                        2
+                    </div>
+                ))}
             </div>
             <div style={{ marginTop: '24px', color: '#333' }}>
-                Use arrow keys to move the tile
+                Use arrow keys to move the tiles
             </div>
         </div>
     );
