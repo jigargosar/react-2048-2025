@@ -89,16 +89,14 @@ export default function TileSlideDemo2() {
 
     if (direction) {
       // Step 1: Update col and increment key
-      flushSync(() => {
-        setTiles(tiles => {
-          const normalized = tiles.map(tile => ({
-            ...tile,
-            col: tile.visualCol
-          }))
-          return slide(normalized, direction!)
-        })
-        setRenderKey(k => k + 1)
+      setTiles(tiles => {
+        const normalized = tiles.map(tile => ({
+          ...tile,
+          col: tile.visualCol
+        }))
+        return slide(normalized, direction!)
       })
+      setRenderKey(k => k + 1)
 
       // Step 2: After browser paints, update visualCol for animation
       requestAnimationFrame(() => {
