@@ -86,30 +86,20 @@ function flipTiles(tiles: Tile[]): Tile[] {
     }));
 }
 
-function transformForDirection(tiles: Tile[], dir: Dir): Tile[] {
+function slideInDirection(tiles: Tile[], dir: Dir): Tile[] {
+    // Transform, slide, and inverse-transform in a single switch block
     switch (dir) {
         case 'left':
-            return tiles;
+            return slideLeft(tiles);
         case 'right':
-            return flipTiles(tiles);
+            // flip horizontally, slide, flip back
+            return flipTiles(slideLeft(flipTiles(tiles)));
         case 'up':
-            return rotateTilesCCW(tiles);
+            // rotate CCW, slide, rotate CW
+            return rotateTiles(slideLeft(rotateTilesCCW(tiles)));
         case 'down':
-            return rotateTiles(tiles);
-        default:
-            return tiles;
-    }
-}
-function inverseTransformForDirection(tiles: Tile[], dir: Dir): Tile[] {
-    switch (dir) {
-        case 'left':
-            return tiles;
-        case 'right':
-            return flipTiles(tiles);
-        case 'up':
-            return rotateTiles(tiles);
-        case 'down':
-            return rotateTilesCCW(tiles);
+            // rotate CW, slide, rotate CCW
+            return rotateTilesCCW(slideLeft(rotateTiles(tiles)));
         default:
             return tiles;
     }
@@ -127,12 +117,10 @@ export default function TileSlideDemo() {
             setTiles(tiles => tiles.map(tile => ({ ...tile, state: 'static' as TileState })));
             // Step 2: Single rAF to process the move after static state is flushed
             requestAnimationFrame(() => {
-                let workingTiles = transformForDirection(
+                let workingTiles = slideInDirection(
                     tiles.map(tile => ({ ...tile, state: 'static' as TileState })),
                     dir
                 );
-                workingTiles = slideLeft(workingTiles);
-                workingTiles = inverseTransformForDirection(workingTiles, dir);
                 setTiles(workingTiles.map(tile => ({ ...tile, state: 'moving' as TileState })));
             });
         };
