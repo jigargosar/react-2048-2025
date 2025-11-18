@@ -1,32 +1,73 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 function posToGridArea({ x, y }: { x: number; y: number }) {
-    // gridColumn and gridRow are 1-based in CSS Grid
     return {
         gridColumn: x + 1,
         gridRow: y + 1,
     };
 }
 
+const gridCols = 4;
+const gridRows = 4;
+
+function computeDest(dir: string, pos: { x: number; y: number }) {
+    switch (dir) {
+        case 'up': return { x: pos.x, y: 0 };
+        case 'down': return { x: pos.x, y: gridRows - 1 };
+        case 'left': return { x: 0, y: pos.y };
+        case 'right': return { x: gridCols - 1, y: pos.y };
+        default: return pos;
+    }
+}
+
+function keyToDir(key: string): 'up' | 'down' | 'left' | 'right' | null {
+    if (key === 'ArrowUp') return 'up';
+    if (key === 'ArrowDown') return 'down';
+    if (key === 'ArrowLeft') return 'left';
+    if (key === 'ArrowRight') return 'right';
+    return null;
+}
+
 export default function TileSlideDemo() {
-    const gridCols = 4;
-    const gridRows = 4;
-    const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // x: col, y: row
+    const [tile, setTile] = useState({
+        pos: { x: 0, y: 0 },
+        dest: { x: 0, y: 0 },
+        state: 'static', // 'static' | 'moving'
+        dir: null as null | 'up' | 'down' | 'left' | 'right',
+    });
+    const raf1 = useRef<number | null>(null);
+    const raf2 = useRef<number | null>(null);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            setPos((prev: { x: number; y: number }) => {
-                let { x, y } = prev;
-                if (e.key === 'ArrowUp') y = 0;
-                if (e.key === 'ArrowDown') y = gridRows - 1;
-                if (e.key === 'ArrowLeft') x = 0;
-                if (e.key === 'ArrowRight') x = gridCols - 1;
-                return { x, y };
+            const dir = keyToDir(e.key);
+            if (!dir) return;
+            e.preventDefault();
+            const newDest = computeDest(dir, tile.pos);
+            if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) return;
+            // Cancel any pending rAFs
+            if (raf1.current) cancelAnimationFrame(raf1.current);
+            if (raf2.current) cancelAnimationFrame(raf2.current);
+            // Snap to current destination (static)
+            setTile(t => ({ ...t, state: 'static' }));
+            raf1.current = requestAnimationFrame(() => {
+                raf2.current = requestAnimationFrame(() => {
+                    setTile({
+                        pos: newDest,
+                        dest: newDest,
+                        state: 'moving',
+                        dir,
+                    });
+                });
             });
         };
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            if (raf1.current) cancelAnimationFrame(raf1.current);
+            if (raf2.current) cancelAnimationFrame(raf2.current);
+        };
+    }, [tile.pos]);
 
     return (
         <div
@@ -76,8 +117,8 @@ export default function TileSlideDemo() {
                         justifyContent: 'center',
                         fontWeight: 'bold',
                         fontSize: '1.5rem',
-                        transform: `translateX(${pos.x * 100}%) translateY(${pos.y * 100}%)`,
-                        transition: 'transform 0.4s linear',
+                        transform: `translateX(${tile.pos.x * 100}%) translateY(${tile.pos.y * 100}%)`,
+                        transition: tile.state === 'moving' ? 'transform 0.2s linear' : 'none',
                     }}
                 >
                     2
