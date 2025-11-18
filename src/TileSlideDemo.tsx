@@ -123,15 +123,16 @@ export default function TileSlideDemo() {
             const dir = keyToDir(e.key);
             if (!dir) return;
             e.preventDefault();
-            // Transform tiles for leftward slide
-            let workingTiles = transformForDirection(tiles, dir);
-            // Slide left
-            workingTiles = slideLeft(workingTiles);
-            // Transform tiles back to original orientation
-            workingTiles = inverseTransformForDirection(workingTiles, dir);
-            // Snap all tiles to static
-            setTiles(workingTiles.map(tile => ({ ...tile, state: 'static' as TileState })));
+            // Step 1: Set all tiles to static (no position change)
+            setTiles(tiles => tiles.map(tile => ({ ...tile, state: 'static' as TileState })));
+            // Step 2: Single rAF to process the move after static state is flushed
             requestAnimationFrame(() => {
+                let workingTiles = transformForDirection(
+                    tiles.map(tile => ({ ...tile, state: 'static' as TileState })),
+                    dir
+                );
+                workingTiles = slideLeft(workingTiles);
+                workingTiles = inverseTransformForDirection(workingTiles, dir);
                 setTiles(workingTiles.map(tile => ({ ...tile, state: 'moving' as TileState })));
             });
         };
