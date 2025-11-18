@@ -48,6 +48,77 @@ const initialTiles: Tile[] = [
     { pos: { x: 3, y: 3 }, dest: { x: 3, y: 3 }, state: 'static' },
 ];
 
+function slideLeft(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
+    // Group tiles by row
+    const rows: Tile[][] = Array.from({ length: gridRows }, () => []);
+    tiles.forEach(tile => rows[tile.pos.y].push(tile));
+    // For each row, sort by x and slide left
+    return rows.flatMap(row => {
+        // Sort tiles by x ascending
+        const sorted = row.slice().sort((a, b) => a.pos.x - b.pos.x);
+        // Slide tiles to the leftmost positions
+        return sorted.map((tile, i) => ({
+            ...tile,
+            pos: { x: i, y: tile.pos.y },
+            dest: { x: i, y: tile.pos.y },
+        }));
+    });
+}
+
+function rotateTiles(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
+    // Rotates positions 90deg clockwise
+    return tiles.map(tile => ({
+        ...tile,
+        pos: { x: gridRows - 1 - tile.pos.y, y: tile.pos.x },
+        dest: { x: gridRows - 1 - tile.pos.y, y: tile.pos.x },
+    }));
+}
+function rotateTilesCCW(tiles: Tile[], gridCols: number, gridRows: number): Tile[] {
+    // Rotates positions 90deg counterclockwise
+    return tiles.map(tile => ({
+        ...tile,
+        pos: { x: tile.pos.y, y: gridCols - 1 - tile.pos.x },
+        dest: { x: tile.pos.y, y: gridCols - 1 - tile.pos.x },
+    }));
+}
+function flipTiles(tiles: Tile[], gridCols: number): Tile[] {
+    // Flips horizontally
+    return tiles.map(tile => ({
+        ...tile,
+        pos: { x: gridCols - 1 - tile.pos.x, y: tile.pos.y },
+        dest: { x: gridCols - 1 - tile.pos.x, y: tile.pos.y },
+    }));
+}
+
+function transformForDirection(tiles: Tile[], dir: Dir, gridCols: number, gridRows: number): Tile[] {
+    switch (dir) {
+        case 'left':
+            return tiles;
+        case 'right':
+            return flipTiles(tiles, gridCols);
+        case 'up':
+            return rotateTilesCCW(tiles, gridCols, gridRows);
+        case 'down':
+            return rotateTiles(tiles, gridCols, gridRows);
+        default:
+            return tiles;
+    }
+}
+function inverseTransformForDirection(tiles: Tile[], dir: Dir, gridCols: number, gridRows: number): Tile[] {
+    switch (dir) {
+        case 'left':
+            return tiles;
+        case 'right':
+            return flipTiles(tiles, gridCols);
+        case 'up':
+            return rotateTiles(tiles, gridCols, gridRows);
+        case 'down':
+            return rotateTilesCCW(tiles, gridCols, gridRows);
+        default:
+            return tiles;
+    }
+}
+
 export default function TileSlideDemo() {
     const [tiles, setTiles] = useState<Tile[]>(initialTiles);
 
@@ -56,42 +127,16 @@ export default function TileSlideDemo() {
             const dir = keyToDir(e.key);
             if (!dir) return;
             e.preventDefault();
-            // Compute new destinations for all tiles, ensuring no overlap
-            const claimed = new Set<string>();
-            const nextTiles = tiles.map(tile => {
-                const newDest = computeDest(dir, tile.pos);
-                const destKey = `${newDest.x},${newDest.y}`;
-                if (claimed.has(destKey)) {
-                    // Destination already claimed, stay in place
-                    return { ...tile, state: 'static' as TileState };
-                }
-                claimed.add(destKey);
-                if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) {
-                    return { ...tile, state: 'static' as TileState };
-                }
-                return { ...tile, state: 'static' as TileState };
-            });
-            setTiles(nextTiles);
+            // Transform tiles for leftward slide
+            let workingTiles = transformForDirection(tiles, dir, gridCols, gridRows);
+            // Slide left
+            workingTiles = slideLeft(workingTiles, gridCols, gridRows);
+            // Transform tiles back to original orientation
+            workingTiles = inverseTransformForDirection(workingTiles, dir, gridCols, gridRows);
+            // Snap all tiles to static
+            setTiles(workingTiles.map(tile => ({ ...tile, state: 'static' as TileState })));
             requestAnimationFrame(() => {
-                const claimedAnim = new Set<string>();
-                setTiles(nextTiles.map(tile => {
-                    const newDest = computeDest(dir, tile.pos);
-                    const destKey = `${newDest.x},${newDest.y}`;
-                    if (claimedAnim.has(destKey)) {
-                        // Destination already claimed, stay in place
-                        return { ...tile, state: 'static' as TileState };
-                    }
-                    claimedAnim.add(destKey);
-                    if (newDest.x === tile.pos.x && newDest.y === tile.pos.y) {
-                        return { ...tile, state: 'static' as TileState };
-                    }
-                    return {
-                        ...tile,
-                        pos: newDest,
-                        dest: newDest,
-                        state: 'moving' as TileState,
-                    };
-                }));
+                setTiles(workingTiles.map(tile => ({ ...tile, state: 'moving' as TileState })));
             });
         };
         window.addEventListener('keydown', handleKeyDown);
