@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type Value = number;
 type Position = { x: number; y: number };
@@ -24,7 +24,11 @@ const initialGrid: Grid = [
 ];
 
 // Convert grid to tile view state
-function gridToTiles(grid: Grid, idMap: Map<string, string>, getNextTileId: () => string): Tile[] {
+function gridToTiles(
+    grid: Grid,
+    idMap: Map<string, string>,
+    getNextTileId: () => string,
+): Tile[] {
     const tiles: Tile[] = [];
     for (let y = 0; y < grid.length; y++) {
         for (let x = 0; x < grid[y].length; x++) {
