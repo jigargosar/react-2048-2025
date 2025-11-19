@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import * as A from 'fp-ts/Array'
+import { type Matrix, transpose, reverseRows } from './utils'
 
 type Tile = {
     id: number
@@ -15,22 +16,9 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 
 const GRID_SIZE = 4
 
-type Matrix<T> = ReadonlyArray<ReadonlyArray<T>>
-
 type Grid = Matrix<Tile | null>
 
 const EMPTY_GRID: Grid = A.replicate(GRID_SIZE, A.replicate(GRID_SIZE, null))
-
-function transpose<T>(array: Matrix<T>): Matrix<T | null> {
-    const firstRow = array[0] ?? []
-    return firstRow.map((_, colIndex) =>
-        array.map(row => row[colIndex] ?? null)
-    )
-}
-
-function reverseRows<T>(array: Matrix<T>): Matrix<T> {
-    return array.map((row) => row.toReversed())
-}
 
 function tilesToGrid(tiles: Tile[]): Grid {
     return tiles.reduce((grid, tile) => {
