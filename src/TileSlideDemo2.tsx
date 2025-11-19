@@ -4,7 +4,6 @@ import * as A from 'fp-ts/Array'
 import { type Matrix, transpose, reverseRows } from './utils'
 
 type Tile = {
-    id: number
     value: number
     row: number
     col: number
@@ -76,12 +75,12 @@ function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
 }
 
 const initialTiles: Tile[] = [
-    { id: 1, value: 2, row: 0, col: 1, visualRow: 0, visualCol: 1 },
-    { id: 2, value: 4, row: 0, col: 3, visualRow: 0, visualCol: 3 },
-    { id: 3, value: 8, row: 1, col: 2, visualRow: 1, visualCol: 2 },
-    { id: 4, value: 16, row: 2, col: 0, visualRow: 2, visualCol: 0 },
-    { id: 5, value: 32, row: 2, col: 3, visualRow: 2, visualCol: 3 },
-    { id: 6, value: 64, row: 3, col: 1, visualRow: 3, visualCol: 1 },
+    { value: 2, row: 0, col: 1, visualRow: 0, visualCol: 1 },
+    { value: 4, row: 0, col: 3, visualRow: 0, visualCol: 3 },
+    { value: 8, row: 1, col: 2, visualRow: 1, visualCol: 2 },
+    { value: 16, row: 2, col: 0, visualRow: 2, visualCol: 0 },
+    { value: 32, row: 2, col: 3, visualRow: 2, visualCol: 3 },
+    { value: 64, row: 3, col: 1, visualRow: 3, visualCol: 1 },
 ]
 
 function useTileSlide() {
@@ -165,12 +164,12 @@ export default function TileSlideDemo2() {
                     height: '400px',
                 }}
             >
-                {tiles.map((tile) => {
+                {tiles.map((tile, idx) => {
                     const offsetCols = tile.visualCol - tile.col
                     const offsetRows = tile.visualRow - tile.row
                     return (
                         <div
-                            key={tile.id}
+                            key={idx}
                             style={{
                                 gridColumn: tile.col + 1,
                                 gridRow: tile.row + 1,
