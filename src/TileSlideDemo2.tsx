@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { pipe } from 'fp-ts/function'
 
 type Tile = {
     id: number
@@ -14,10 +15,6 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 const GRID_SIZE = 4
 
 type Grid = (Tile | null)[][]
-
-function pipe<T>(value: T, ...fns: ((arg: T) => T)[]): T {
-    return fns.reduce((acc, fn) => fn(acc), value)
-}
 
 function transpose<T>(array: T[][]): T[][] {
     if (array.length === 0) return []
