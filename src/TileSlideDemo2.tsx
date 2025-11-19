@@ -22,8 +22,7 @@ const EMPTY_GRID: Grid = A.replicate(GRID_SIZE, A.replicate(GRID_SIZE, null))
 
 function tilesToGrid(tiles: Tile[]): Grid {
     return tiles.reduce((grid, tile) => {
-        const row = grid[tile.row]
-        if (!row) throw new Error(`Invalid row index: ${String(tile.row)}`)
+        const row = grid[tile.row] ?? []
         const updatedRow = row.with(tile.col, tile)
         return grid.with(tile.row, updatedRow)
     }, EMPTY_GRID)
@@ -76,15 +75,17 @@ function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
     )
 }
 
-export default function TileSlideDemo2() {
-    const [tiles, setTiles] = useState<Tile[]>([
-        { id: 1, value: 2, row: 0, col: 1, visualRow: 0, visualCol: 1 },
-        { id: 2, value: 4, row: 0, col: 3, visualRow: 0, visualCol: 3 },
-        { id: 3, value: 8, row: 1, col: 2, visualRow: 1, visualCol: 2 },
-        { id: 4, value: 16, row: 2, col: 0, visualRow: 2, visualCol: 0 },
-        { id: 5, value: 32, row: 2, col: 3, visualRow: 2, visualCol: 3 },
-        { id: 6, value: 64, row: 3, col: 1, visualRow: 3, visualCol: 1 },
-    ])
+const initialTiles: Tile[] = [
+    { id: 1, value: 2, row: 0, col: 1, visualRow: 0, visualCol: 1 },
+    { id: 2, value: 4, row: 0, col: 3, visualRow: 0, visualCol: 3 },
+    { id: 3, value: 8, row: 1, col: 2, visualRow: 1, visualCol: 2 },
+    { id: 4, value: 16, row: 2, col: 0, visualRow: 2, visualCol: 0 },
+    { id: 5, value: 32, row: 2, col: 3, visualRow: 2, visualCol: 3 },
+    { id: 6, value: 64, row: 3, col: 1, visualRow: 3, visualCol: 1 },
+]
+
+function useTileSlide() {
+    const [tiles, setTiles] = useState<Tile[]>(initialTiles)
     const [renderKey, setRenderKey] = useState(0)
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -129,6 +130,12 @@ export default function TileSlideDemo2() {
             window.removeEventListener('keydown', handleKeyDown)
         }
     })
+
+    return { tiles, renderKey }
+}
+
+export default function TileSlideDemo2() {
+    const { tiles, renderKey } = useTileSlide()
 
     return (
         <div
