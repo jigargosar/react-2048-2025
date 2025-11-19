@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './main.css'
-import TileSlideDemo2 from './TileSlideDemo2'
+import { TileSlideDemo3 } from './TileSlideDemo3'
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {
@@ -9,6 +9,6 @@ if (!rootElement) {
 }
 createRoot(rootElement).render(
     <StrictMode>
-        <TileSlideDemo2 />
+        <TileSlideDemo3 />
     </StrictMode>,
 )
