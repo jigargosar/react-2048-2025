@@ -15,24 +15,20 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 
 const GRID_SIZE = 4
 
-type Grid = ReadonlyArray<ReadonlyArray<Tile | null>>
+type Matrix<T> = ReadonlyArray<ReadonlyArray<T>>
+
+type Grid = Matrix<Tile | null>
 
 const EMPTY_GRID: Grid = A.replicate(GRID_SIZE, A.replicate(GRID_SIZE, null))
 
-function transpose<T>(array: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<ReadonlyArray<T>> {
-    if (array.length === 0) return []
-    const firstRow = array[0]
-    if (!firstRow) return []
+function transpose<T>(array: Matrix<T>): Matrix<T | null> {
+    const firstRow = array[0] ?? []
     return firstRow.map((_, colIndex) =>
-        array.map((row) => {
-            const cell = row[colIndex]
-            if (cell === undefined) throw new Error('Invalid grid structure')
-            return cell
-        })
+        array.map(row => row[colIndex] ?? null)
     )
 }
 
-function reverseRows<T>(array: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<ReadonlyArray<T>> {
+function reverseRows<T>(array: Matrix<T>): Matrix<T> {
     return array.map((row) => row.toReversed())
 }
 
