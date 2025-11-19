@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { flushSync } from 'react-dom'
 
 type Tile = {
   id: number
@@ -22,7 +21,7 @@ function slideLeft(tiles: Tile[]): Tile[] {
   })
 
   const newTiles: Tile[] = []
-  rows.forEach((rowTiles, rowIndex) => {
+  rows.forEach(rowTiles => {
     const sorted = rowTiles.sort((a, b) => a.visualCol - b.visualCol)
     sorted.forEach((tile, index) => {
       newTiles.push({
@@ -43,7 +42,7 @@ function slideRight(tiles: Tile[]): Tile[] {
   })
 
   const newTiles: Tile[] = []
-  rows.forEach((rowTiles, rowIndex) => {
+  rows.forEach(rowTiles => {
     const sorted = rowTiles.sort((a, b) => b.visualCol - a.visualCol)
     sorted.forEach((tile, index) => {
       const newCol = GRID_SIZE - 1 - index
@@ -65,7 +64,7 @@ function slideUp(tiles: Tile[]): Tile[] {
   })
 
   const newTiles: Tile[] = []
-  cols.forEach((colTiles, colIndex) => {
+  cols.forEach(colTiles => {
     const sorted = colTiles.sort((a, b) => a.visualRow - b.visualRow)
     sorted.forEach((tile, index) => {
       newTiles.push({
@@ -86,7 +85,7 @@ function slideDown(tiles: Tile[]): Tile[] {
   })
 
   const newTiles: Tile[] = []
-  cols.forEach((colTiles, colIndex) => {
+  cols.forEach(colTiles => {
     const sorted = colTiles.sort((a, b) => b.visualRow - a.visualRow)
     sorted.forEach((tile, index) => {
       const newRow = GRID_SIZE - 1 - index
