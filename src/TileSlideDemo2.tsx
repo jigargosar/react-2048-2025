@@ -13,6 +13,87 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 
 const GRID_SIZE = 4
 
+// ============ NEW GRID-BASED SLIDE IMPLEMENTATION ============
+
+type Grid = (Tile | null)[][]
+
+// Utility: Pipe function for composing transformations
+function pipe<T>(value: T, ...fns: ((arg: T) => T)[]): T {
+    return fns.reduce((acc, fn) => fn(acc), value)
+}
+
+// Helper: Transpose 2D array (swap rows and columns)
+function transpose<T>(array: T[][]): T[][] {
+    if (array.length === 0) return []
+    return array[0].map((_, colIndex) => array.map((row) => row[colIndex]))
+}
+
+// Helper: Reverse each row (horizontal flip)
+function reverseRows<T>(array: T[][]): T[][] {
+    return array.map((row) => [...row].reverse())
+}
+
+// Convert tiles array to 2D grid
+function tilesToGrid(tiles: Tile[]): Grid {
+    const grid: Grid = Array.from({ length: GRID_SIZE }, () =>
+        Array(GRID_SIZE).fill(null),
+    )
+    tiles.forEach((tile) => {
+        grid[tile.row][tile.col] = tile
+    })
+    return grid
+}
+
+// Slide all rows left (core logic)
+function slideLeftGrid(grid: Grid): Grid {
+    return grid.map((row) => {
+        const tiles = row.filter((cell) => cell !== null)
+        const nulls = Array(row.length - tiles.length).fill(null)
+        return [...tiles, ...nulls]
+    })
+}
+
+// Slide with transformations using pipe
+function slideGridInDirection(grid: Grid, direction: Direction): Grid {
+    switch (direction) {
+        case 'left':
+            return pipe(grid, slideLeftGrid)
+        case 'right':
+            return pipe(grid, reverseRows, slideLeftGrid, reverseRows)
+        case 'up':
+            return pipe(grid, transpose, slideLeftGrid, transpose)
+        case 'down':
+            return pipe(
+                grid,
+                transpose,
+                reverseRows,
+                slideLeftGrid,
+                reverseRows,
+                transpose,
+            )
+        default:
+            return grid
+    }
+}
+
+// Extract tiles from grid with new positions
+function gridToTiles(grid: Grid): Tile[] {
+    return grid.flatMap((row, rowIndex) =>
+        row.flatMap((tile, colIndex) =>
+            tile ? [{ ...tile, row: rowIndex, col: colIndex }] : [],
+        ),
+    )
+}
+
+// Main slide function using grid approach
+function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
+    const grid = tilesToGrid(tiles)
+    const slid = slideGridInDirection(grid, direction)
+    return gridToTiles(slid)
+}
+
+// ============ END NEW GRID-BASED IMPLEMENTATION ============
+
 function slideLeft(tiles: Tile[]): Tile[] {
     const rows: Tile[][] = Array.from({ length: GRID_SIZE }, () => [])
 
