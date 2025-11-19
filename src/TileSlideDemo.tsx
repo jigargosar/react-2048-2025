@@ -1,36 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 
-type Pos = { x: number; y: number };
-type Dir = 'up' | 'down' | 'left' | 'right';
-type TileState = 'static' | 'moving';
+type Pos = { x: number; y: number }
+type Dir = 'up' | 'down' | 'left' | 'right'
+type TileState = 'static' | 'moving'
 type Tile = {
-    pos: Pos;
-    dest: Pos;
-    state: TileState;
-    value: number;
-};
+    pos: Pos
+    dest: Pos
+    state: TileState
+    value: number
+}
 
 function posToGridArea(pos: Pos) {
     return {
         gridColumn: pos.x + 1,
         gridRow: pos.y + 1,
-    };
+    }
 }
 
-const gridCols = 4;
-const gridRows = 4;
+const gridCols = 4
+const gridRows = 4
 
 const grid: Pos[][] = Array.from({ length: gridRows }, (_, y) =>
-    Array.from({ length: gridCols }, (_, x) => ({ x, y }))
-);
-const allPos: Pos[] = grid.flat();
+    Array.from({ length: gridCols }, (_, x) => ({ x, y })),
+)
+const allPos: Pos[] = grid.flat()
 
 function keyToDir(key: string): Dir | null {
-    if (key === 'ArrowUp') return 'up';
-    if (key === 'ArrowDown') return 'down';
-    if (key === 'ArrowLeft') return 'left';
-    if (key === 'ArrowRight') return 'right';
-    return null;
+    if (key === 'ArrowUp') return 'up'
+    if (key === 'ArrowDown') return 'down'
+    if (key === 'ArrowLeft') return 'left'
+    if (key === 'ArrowRight') return 'right'
+    return null
 }
 
 const initialTiles: Tile[] = [
@@ -42,93 +42,106 @@ const initialTiles: Tile[] = [
     { pos: { x: 0, y: 3 }, dest: { x: 0, y: 3 }, state: 'static', value: 64 },
     { pos: { x: 2, y: 2 }, dest: { x: 2, y: 2 }, state: 'static', value: 128 },
     { pos: { x: 3, y: 0 }, dest: { x: 3, y: 0 }, state: 'static', value: 256 },
-];
+]
 
 function slideLeft(tiles: Tile[]): Tile[] {
     // Group tiles by row
-    const rows: Tile[][] = Array.from({ length: gridRows }, () => []);
-    tiles.forEach(tile => rows[tile.pos.y].push(tile));
+    const rows: Tile[][] = Array.from({ length: gridRows }, () => [])
+    tiles.forEach((tile) => rows[tile.pos.y].push(tile))
     // For each row, sort by x and slide left
-    return rows.flatMap(row => {
+    return rows.flatMap((row) => {
         // Sort tiles by x ascending
-        const sorted = row.slice().sort((a, b) => a.pos.x - b.pos.x);
+        const sorted = row.slice().sort((a, b) => a.pos.x - b.pos.x)
         // Slide tiles to the leftmost positions
         return sorted.map((tile, i) => ({
             ...tile,
             pos: { x: i, y: tile.pos.y },
             dest: { x: i, y: tile.pos.y },
-        }));
-    });
+        }))
+    })
 }
 
 function rotateTiles(tiles: Tile[]): Tile[] {
     // Rotates positions 90deg clockwise
-    return tiles.map(tile => ({
+    return tiles.map((tile) => ({
         ...tile,
         pos: { x: gridRows - 1 - tile.pos.y, y: tile.pos.x },
         dest: { x: gridRows - 1 - tile.pos.y, y: tile.pos.x },
-    }));
+    }))
 }
 function rotateTilesCCW(tiles: Tile[]): Tile[] {
     // Rotates positions 90deg counterclockwise
-    return tiles.map(tile => ({
+    return tiles.map((tile) => ({
         ...tile,
         pos: { x: tile.pos.y, y: gridCols - 1 - tile.pos.x },
         dest: { x: tile.pos.y, y: gridCols - 1 - tile.pos.x },
-    }));
+    }))
 }
 function flipTiles(tiles: Tile[]): Tile[] {
     // Flips horizontally
-    return tiles.map(tile => ({
+    return tiles.map((tile) => ({
         ...tile,
         pos: { x: gridCols - 1 - tile.pos.x, y: tile.pos.y },
         dest: { x: gridCols - 1 - tile.pos.x, y: tile.pos.y },
-    }));
+    }))
 }
 
 function slideInDirection(tiles: Tile[], dir: Dir): Tile[] {
     // Transform, slide, and inverse-transform in a single switch block
     switch (dir) {
         case 'left':
-            return slideLeft(tiles);
+            return slideLeft(tiles)
         case 'right':
             // flip horizontally, slide, flip back
-            return flipTiles(slideLeft(flipTiles(tiles)));
+            return flipTiles(slideLeft(flipTiles(tiles)))
         case 'up':
             // rotate CCW, slide, rotate CW
-            return rotateTiles(slideLeft(rotateTilesCCW(tiles)));
+            return rotateTiles(slideLeft(rotateTilesCCW(tiles)))
         case 'down':
             // rotate CW, slide, rotate CCW
-            return rotateTilesCCW(slideLeft(rotateTiles(tiles)));
+            return rotateTilesCCW(slideLeft(rotateTiles(tiles)))
         default:
-            return tiles;
+            return tiles
     }
 }
 
 export default function TileSlideDemo() {
-    const [tiles, setTiles] = useState<Tile[]>(initialTiles);
+    const [tiles, setTiles] = useState<Tile[]>(initialTiles)
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            const dir = keyToDir(e.key);
-            if (!dir) return;
-            e.preventDefault();
+            const dir = keyToDir(e.key)
+            if (!dir) return
+            e.preventDefault()
             // Step 1: Set all tiles to static (no position change)
-            setTiles(tiles => tiles.map(tile => ({ ...tile, state: 'static' as TileState })));
+            setTiles((tiles) =>
+                tiles.map((tile) => ({
+                    ...tile,
+                    state: 'static' as TileState,
+                })),
+            )
             // Step 2: Single rAF to process the move after static state is flushed
             requestAnimationFrame(() => {
                 const workingTiles = slideInDirection(
-                    tiles.map(tile => ({ ...tile, state: 'static' as TileState })),
-                    dir
-                );
-                setTiles(workingTiles.map(tile => ({ ...tile, state: 'moving' as TileState })));
-            });
-        };
-        window.addEventListener('keydown', handleKeyDown);
+                    tiles.map((tile) => ({
+                        ...tile,
+                        state: 'static' as TileState,
+                    })),
+                    dir,
+                )
+                setTiles(
+                    workingTiles.map((tile) => ({
+                        ...tile,
+                        state: 'moving' as TileState,
+                    })),
+                )
+            })
+        }
+        window.addEventListener('keydown', handleKeyDown)
         return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [tiles]);
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [tiles])
 
     return (
         <div
@@ -153,7 +166,7 @@ export default function TileSlideDemo() {
                     background: '#eee',
                 }}
             >
-                {allPos.map(pos => (
+                {allPos.map((pos) => (
                     <div
                         key={`${pos.x},${pos.y}`}
                         style={{
@@ -179,7 +192,10 @@ export default function TileSlideDemo() {
                             fontWeight: 'bold',
                             fontSize: '1.5rem',
                             transform: `translateX(${tile.pos.x * 100}%) translateY(${tile.pos.y * 100}%)`,
-                            transition: tile.state === 'moving' ? 'transform 0.2s linear' : 'none',
+                            transition:
+                                tile.state === 'moving'
+                                    ? 'transform 0.2s linear'
+                                    : 'none',
                         }}
                     >
                         {tile.value}
@@ -190,5 +206,5 @@ export default function TileSlideDemo() {
                 Use arrow keys to move the tiles
             </div>
         </div>
-    );
+    )
 }

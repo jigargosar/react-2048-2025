@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react'
 
-type Value = number;
-type Position = { x: number; y: number };
-type Tile = { id: string; value: Value; pos: Position; merging?: boolean };
-type Row = Value[];
-type Grid = Row[];
+type Value = number
+type Position = { x: number; y: number }
+type Tile = { id: string; value: Value; pos: Position; merging?: boolean }
+type Row = Value[]
+type Grid = Row[]
 
-const GRID_SIZE = 4;
+const GRID_SIZE = 4
 
 const gridPositions: Position[] = Array.from(
     { length: GRID_SIZE * GRID_SIZE },
@@ -14,14 +14,14 @@ const gridPositions: Position[] = Array.from(
         x: i % GRID_SIZE,
         y: Math.floor(i / GRID_SIZE),
     }),
-);
+)
 
 const initialGrid: Grid = [
     [2, 0, 0, 2],
     [0, 4, 8, 0],
     [16, 0, 0, 32],
     [0, 64, 0, 128],
-];
+]
 
 // Convert grid to tile view state
 function gridToTiles(
@@ -29,34 +29,34 @@ function gridToTiles(
     idMap: Map<string, string>,
     getNextTileId: () => string,
 ): Tile[] {
-    const tiles: Tile[] = [];
+    const tiles: Tile[] = []
     for (let y = 0; y < grid.length; y++) {
         for (let x = 0; x < grid[y].length; x++) {
-            const value = grid[y][x];
+            const value = grid[y][x]
             if (value !== 0) {
-                const key = `${value}-${x}-${y}`;
-                let id = idMap.get(key);
+                const key = `${value}-${x}-${y}`
+                let id = idMap.get(key)
                 if (!id) {
-                    id = getNextTileId();
-                    idMap.set(key, id);
+                    id = getNextTileId()
+                    idMap.set(key, id)
                 }
                 tiles.push({
                     id,
                     value,
                     pos: { x, y },
-                });
+                })
             }
         }
     }
-    return tiles;
+    return tiles
 }
 
 function slideLeft(grid: Grid): Grid {
     return grid.map((row: Row) => {
-        const filtered = row.filter((v: number) => v !== 0);
-        const zeros = Array(row.length - filtered.length).fill(0);
-        return [...filtered, ...zeros];
-    });
+        const filtered = row.filter((v: number) => v !== 0)
+        const zeros = Array(row.length - filtered.length).fill(0)
+        return [...filtered, ...zeros]
+    })
 }
 
 function renderGrid(tiles: Tile[], animating: boolean) {
@@ -69,7 +69,7 @@ function renderGrid(tiles: Tile[], animating: boolean) {
             }}
             className="w-16 h-16 flex items-center justify-center rounded-lg border-2 border-gray-900 bg-gray-800 text-gray-600"
         />
-    ));
+    ))
 
     // Render tiles from view state
     const tileElems = tiles.map((tile) => (
@@ -85,7 +85,7 @@ function renderGrid(tiles: Tile[], animating: boolean) {
         >
             {tile.value}
         </div>
-    ));
+    ))
 
     return (
         <div
@@ -105,40 +105,40 @@ function renderGrid(tiles: Tile[], animating: boolean) {
             {backgroundTiles}
             {tileElems}
         </div>
-    );
+    )
 }
 
 function App() {
-    const [grid, setGrid] = useState<Grid>(initialGrid);
-    const [tiles, setTiles] = useState<Tile[]>([]);
-    const [animating, setAnimating] = useState(false);
-    const gridRef = useRef<Grid>(initialGrid);
-    const tileIdCounter = useRef(0);
-    const idMapRef = useRef<Map<string, string>>(new Map());
+    const [grid, setGrid] = useState<Grid>(initialGrid)
+    const [tiles, setTiles] = useState<Tile[]>([])
+    const [animating, setAnimating] = useState(false)
+    const gridRef = useRef<Grid>(initialGrid)
+    const tileIdCounter = useRef(0)
+    const idMapRef = useRef<Map<string, string>>(new Map())
 
     // Helper to generate unique tile IDs using useRef
-    const getNextTileId = () => `tile-${tileIdCounter.current++}`;
+    const getNextTileId = () => `tile-${tileIdCounter.current++}`
 
     useEffect(() => {
         // Update tiles when grid changes
-        setTiles(gridToTiles(grid, idMapRef.current, getNextTileId));
-        gridRef.current = grid;
-    }, [grid]);
+        setTiles(gridToTiles(grid, idMapRef.current, getNextTileId))
+        gridRef.current = grid
+    }, [grid])
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'ArrowLeft') {
-                setAnimating(true);
+                setAnimating(true)
                 setTimeout(() => {
-                    const newGrid = slideLeft(gridRef.current);
-                    setGrid(newGrid);
-                    setAnimating(false);
-                }, 300); // match duration-300
+                    const newGrid = slideLeft(gridRef.current)
+                    setGrid(newGrid)
+                    setAnimating(false)
+                }, 300) // match duration-300
             }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [])
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
@@ -149,7 +149,7 @@ function App() {
                 {renderGrid(tiles, animating)}
             </div>
         </div>
-    );
+    )
 }
 
-export default App;
+export default App
