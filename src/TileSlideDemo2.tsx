@@ -13,27 +13,21 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 
 const GRID_SIZE = 4
 
-// ============ NEW GRID-BASED SLIDE IMPLEMENTATION ============
-
 type Grid = (Tile | null)[][]
 
-// Utility: Pipe function for composing transformations
 function pipe<T>(value: T, ...fns: ((arg: T) => T)[]): T {
     return fns.reduce((acc, fn) => fn(acc), value)
 }
 
-// Helper: Transpose 2D array (swap rows and columns)
 function transpose<T>(array: T[][]): T[][] {
     if (array.length === 0) return []
     return array[0].map((_, colIndex) => array.map((row) => row[colIndex]))
 }
 
-// Helper: Reverse each row (horizontal flip)
 function reverseRows<T>(array: T[][]): T[][] {
     return array.map((row) => [...row].reverse())
 }
 
-// Convert tiles array to 2D grid
 function tilesToGrid(tiles: Tile[]): Grid {
     const grid: Grid = Array.from({ length: GRID_SIZE }, () =>
         Array(GRID_SIZE).fill(null),
@@ -44,7 +38,6 @@ function tilesToGrid(tiles: Tile[]): Grid {
     return grid
 }
 
-// Slide all rows left (core logic)
 function slideLeftGrid(grid: Grid): Grid {
     return grid.map((row) => {
         const tiles = row.filter((cell) => cell !== null)
@@ -53,7 +46,6 @@ function slideLeftGrid(grid: Grid): Grid {
     })
 }
 
-// Slide with transformations using pipe
 function slideGridInDirection(grid: Grid, direction: Direction): Grid {
     switch (direction) {
         case 'left':
@@ -76,7 +68,6 @@ function slideGridInDirection(grid: Grid, direction: Direction): Grid {
     }
 }
 
-// Extract tiles from grid with new positions
 function gridToTiles(grid: Grid): Tile[] {
     return grid.flatMap((row, rowIndex) =>
         row.flatMap((tile, colIndex) =>
@@ -85,7 +76,6 @@ function gridToTiles(grid: Grid): Tile[] {
     )
 }
 
-// Main slide function using grid approach
 function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
     return pipe(
         tiles,
@@ -94,8 +84,6 @@ function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
         gridToTiles,
     )
 }
-
-// ============ END NEW GRID-BASED IMPLEMENTATION ============
 
 export default function TileSlideDemo2() {
     const [tiles, setTiles] = useState<Tile[]>([
@@ -122,7 +110,6 @@ export default function TileSlideDemo2() {
         }
 
         if (direction) {
-            // Step 1: Normalize positions and calculate new positions, increment key
             setTiles((tiles) => {
                 const normalized = tiles.map((tile) => ({
                     ...tile,
@@ -133,7 +120,6 @@ export default function TileSlideDemo2() {
             })
             setRenderKey((k) => k + 1)
 
-            // Step 2: After browser paints, update visual positions for animation
             requestAnimationFrame(() => {
                 setTiles((tiles) =>
                     tiles.map((tile) => ({
