@@ -18,11 +18,11 @@ type Grid = (Tile | null)[][]
 
 function transpose<T>(array: T[][]): T[][] {
     if (array.length === 0) return []
-    return array[0].map((_, colIndex) => array.map((row) => row[colIndex]))
+    return array.at(0)!.map((_, colIndex) => array.map((row) => row[colIndex]))
 }
 
 function reverseRows<T>(array: T[][]): T[][] {
-    return array.map((row) => [...row].reverse())
+    return array.map((row) => row.toReversed())
 }
 
 function tilesToGrid(tiles: Tile[]): Grid {
@@ -39,7 +39,7 @@ function slideLeftGrid(grid: Grid): Grid {
     return grid.map((row) => {
         const tiles = row.filter((cell) => cell !== null)
         const nulls = Array(row.length - tiles.length).fill(null)
-        return [...tiles, ...nulls]
+        return tiles.concat(nulls)
     })
 }
 

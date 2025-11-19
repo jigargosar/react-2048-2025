@@ -16,7 +16,7 @@ export default defineConfig([
             reactRefresh.configs.vite,
         ],
         languageOptions: {
-            ecmaVersion: 2020,
+            ecmaVersion: 2024,
             globals: globals.browser,
             parserOptions: {
                 // NOTE: Enables type-aware linting. May slow down linting.
