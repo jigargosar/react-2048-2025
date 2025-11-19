@@ -87,9 +87,12 @@ function gridToTiles(grid: Grid): Tile[] {
 
 // Main slide function using grid approach
 function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
-    const grid = tilesToGrid(tiles)
-    const slid = slideGridInDirection(grid, direction)
-    return gridToTiles(slid)
+    return pipe(
+        tiles,
+        tilesToGrid,
+        (grid) => slideGridInDirection(grid, direction),
+        gridToTiles,
+    )
 }
 
 // ============ END NEW GRID-BASED IMPLEMENTATION ============
@@ -227,7 +230,7 @@ export default function TileSlideDemo2() {
                     row: tile.visualRow,
                     col: tile.visualCol,
                 }))
-                return slide(normalized, direction!)
+                return slideWithGrid(normalized, direction!)
             })
             setRenderKey((k) => k + 1)
 
