@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { pipe } from 'fp-ts/function'
+import * as A from 'fp-ts/Array'
 
 type Tile = {
     id: number
@@ -14,25 +15,34 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 
 const GRID_SIZE = 4
 
-type Grid = (Tile | null)[][]
+type Grid = ReadonlyArray<ReadonlyArray<Tile | null>>
 
-function transpose<T>(array: T[][]): T[][] {
+const EMPTY_GRID: Grid = A.replicate(GRID_SIZE, A.replicate(GRID_SIZE, null))
+
+function transpose<T>(array: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<ReadonlyArray<T>> {
     if (array.length === 0) return []
-    return array.at(0)!.map((_, colIndex) => array.map((row) => row[colIndex]))
+    const firstRow = array[0]
+    if (!firstRow) return []
+    return firstRow.map((_, colIndex) =>
+        array.map((row) => {
+            const cell = row[colIndex]
+            if (cell === undefined) throw new Error('Invalid grid structure')
+            return cell
+        })
+    )
 }
 
-function reverseRows<T>(array: T[][]): T[][] {
+function reverseRows<T>(array: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<ReadonlyArray<T>> {
     return array.map((row) => row.toReversed())
 }
 
 function tilesToGrid(tiles: Tile[]): Grid {
-    const grid: Grid = Array.from({ length: GRID_SIZE }, () =>
-        Array(GRID_SIZE).fill(null),
-    )
-    tiles.forEach((tile) => {
-        grid[tile.row][tile.col] = tile
-    })
-    return grid
+    return tiles.reduce((grid, tile) => {
+        const row = grid[tile.row]
+        if (!row) throw new Error(`Invalid row index: ${String(tile.row)}`)
+        const updatedRow = row.with(tile.col, tile)
+        return grid.with(tile.row, updatedRow)
+    }, EMPTY_GRID)
 }
 
 function slideLeftGrid(grid: Grid): Grid {
@@ -113,7 +123,7 @@ export default function TileSlideDemo2() {
                     row: tile.visualRow,
                     col: tile.visualCol,
                 }))
-                return slideWithGrid(normalized, direction!)
+                return slideWithGrid(normalized, direction)
             })
             setRenderKey((k) => k + 1)
 
@@ -131,7 +141,9 @@ export default function TileSlideDemo2() {
 
     useState(() => {
         window.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
     })
 
     return (
@@ -153,8 +165,8 @@ export default function TileSlideDemo2() {
                 key={renderKey}
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-                    gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+                    gridTemplateColumns: `repeat(${String(GRID_SIZE)}, 1fr)`,
+                    gridTemplateRows: `repeat(${String(GRID_SIZE)}, 1fr)`,
                     gap: '0',
                     background: '#2d2d2d',
                     borderRadius: '8px',
@@ -175,7 +187,7 @@ export default function TileSlideDemo2() {
                                 height: '100%',
                                 padding: '5px',
                                 boxSizing: 'border-box',
-                                transform: `translate(${offsetCols * 100}%, ${offsetRows * 100}%)`,
+                                transform: `translate(${String(offsetCols * 100)}%, ${String(offsetRows * 100)}%)`,
                                 transition: 'transform 200ms ease-in-out',
                             }}
                         >

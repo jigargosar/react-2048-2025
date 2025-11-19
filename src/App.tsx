@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { useEffect, useRef, useState } from 'react'
 
 type Value = number

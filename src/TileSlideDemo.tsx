@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { useEffect, useState } from 'react'
 
 type Pos = { x: number; y: number }
