@@ -130,6 +130,41 @@ function slideWithGrid(tiles: Tile[], direction: Direction): Tile[] {
     )
 }
 
+function findEmptyCells(tiles: Tile[]): Array<{ row: number; col: number }> {
+    const occupied = new Set(tiles.map((tile) => `${String(tile.row)},${String(tile.col)}`))
+    const empty: Array<{ row: number; col: number }> = []
+
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            if (!occupied.has(`${String(row)},${String(col)}`)) {
+                empty.push({ row, col })
+            }
+        }
+    }
+
+    return empty
+}
+
+function spawnRandomTile(tiles: Tile[]): Tile | null {
+    const emptyCells = findEmptyCells(tiles)
+    if (emptyCells.length === 0) return null
+
+    const randomIndex = Math.floor(Math.random() * emptyCells.length)
+    const position = emptyCells[randomIndex]
+    const value = Math.random() < 0.9 ? 2 : 4
+
+    if (!position) return null
+
+    return {
+        value,
+        row: position.row,
+        col: position.col,
+        visualRow: position.row,
+        visualCol: position.col,
+        mergeState: { type: 'normal' },
+    }
+}
+
 const initialTiles: Tile[] = [
     { value: 2, row: 0, col: 0, visualRow: 0, visualCol: 0, mergeState: { type: 'normal' } },
     { value: 2, row: 0, col: 1, visualRow: 0, visualCol: 1, mergeState: { type: 'normal' } },
@@ -163,7 +198,10 @@ function useTileSlide() {
                     row: tile.visualRow,
                     col: tile.visualCol,
                 }))
-                return slideWithGrid(normalized, direction)
+                const afterSlide = slideWithGrid(normalized, direction)
+                const newTile = spawnRandomTile(afterSlide)
+
+                return newTile ? [...afterSlide, newTile] : afterSlide
             })
             setRenderKey((k) => k + 1)
 
