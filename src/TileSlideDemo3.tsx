@@ -65,7 +65,7 @@ function setTilesStateStatic(tiles: Tile[]): Tile[] {
 }
 
 // Update tile positions based on their location in the matrix
-function setPositions(matrix: (Tile | null)[][]): (Tile | null)[][] {
+function setPositionsFromMatrix(matrix: (Tile | null)[][]): (Tile | null)[][] {
     return matrix.map((row, rowIndex) =>
         row.map((tile, colIndex) => {
             if (tile === null) return null
@@ -97,7 +97,7 @@ function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
 }
 
 // Slide tiles in the specified direction
-function slideInDirection(
+function slideAndMergeMatrix(
     matrix: (Tile | null)[][],
     direction: Direction,
 ): (Tile | null)[][] {
@@ -109,6 +109,18 @@ function slideInDirection(
         case 'down':
             return slideLeft(matrix) // TODO: implement other directions
     }
+}
+
+// Process tiles for sliding in a direction
+function slideAndMergeTiles(tiles: Tile[], direction: Direction): Tile[] {
+    return pipe(
+        tiles,
+        tilesToMatrix,
+        (matrix) => slideAndMergeMatrix(matrix, direction),
+        setPositionsFromMatrix,
+        flatten,
+        keepNonNil,
+    )
 }
 
 export function TileSlideDemo3() {
@@ -140,14 +152,7 @@ export function TileSlideDemo3() {
                 setRenderCounter((prev) => prev + 1)
                 requestAnimationFrame(() => {
                     setTiles((prevTiles) => {
-                        return pipe(
-                            prevTiles,
-                            tilesToMatrix,
-                            (matrix) => slideInDirection(matrix, direction),
-                            setPositions,
-                            flatten,
-                            keepNonNil,
-                        )
+                        return slideAndMergeTiles(prevTiles, direction)
                     })
                 })
             }
