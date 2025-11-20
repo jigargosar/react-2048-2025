@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { pipe } from 'fp-ts/function'
-import { flatten } from 'fp-ts/Array'
-import { keepNonNil, transpose, reverseRows } from './utils.ts'
+import { flatten, inc } from 'ramda'
+import { keepNonNil, type Matrix, reverseRows, transpose } from './utils.ts'
 
 // Types
 type Position = { row: number; col: number }
 type TileState = { type: 'static' } | { type: 'moved'; from: Position }
 type Tile = { value: number; position: Position; state: TileState }
 type Direction = 'left' | 'right' | 'up' | 'down'
+type TileMatrix = Matrix<Tile | null>
 
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
@@ -42,7 +43,7 @@ function getTileTextColor(value: number): string {
 }
 
 // Convert tiles array to 4x4 matrix
-function tilesToMatrix(tiles: Tile[]): (Tile | null)[][] {
+function tilesToMatrix(tiles: Tile[]): TileMatrix {
     const matrix: (Tile | null)[][] = Array.from({ length: 4 }, () =>
         Array<Tile | null>(4).fill(null),
     )
@@ -65,7 +66,7 @@ function setTilesStateStatic(tiles: Tile[]): Tile[] {
 }
 
 // Update tile positions based on their location in the matrix
-function setPositionsFromMatrix(matrix: (Tile | null)[][]): (Tile | null)[][] {
+function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
     return matrix.map((row, rowIndex) =>
         row.map((tile, colIndex) => {
             if (tile === null) return null
@@ -78,7 +79,7 @@ function setPositionsFromMatrix(matrix: (Tile | null)[][]): (Tile | null)[][] {
 }
 
 // Slide tiles left in matrix
-function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
+function slideLeft(matrix: TileMatrix): TileMatrix {
     return matrix.map((row) => {
         const tiles = row.filter((tile): tile is Tile => tile !== null)
         const newRow: (Tile | null)[] = Array<Tile | null>(4).fill(null)
@@ -97,19 +98,23 @@ function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
 }
 
 // Slide tiles in the specified direction
-function slideAndMergeMatrix(
-    matrix: (Tile | null)[][],
-    direction: Direction,
-): (Tile | null)[][] {
+function slideAndMergeMatrix(matrix: TileMatrix, direction: Direction,): TileMatrix {
     switch (direction) {
         case 'left':
             return slideLeft(matrix)
         case 'right':
-            return reverseRows(slideLeft(reverseRows(matrix)))
+            return pipe(matrix, reverseRows, slideLeft, reverseRows)
         case 'up':
-            return transpose(slideLeft(transpose(matrix)))
+            return pipe(matrix, transpose, slideLeft, transpose)
         case 'down':
-            return transpose(reverseRows(slideLeft(reverseRows(transpose(matrix)))))
+            return pipe(
+                matrix,
+                transpose,
+                reverseRows,
+                slideLeft,
+                reverseRows,
+                transpose,
+            )
     }
 }
 
@@ -148,10 +153,8 @@ export function TileSlideDemo3() {
             }
 
             if (direction) {
-                setTiles((prevTiles) => {
-                    return setTilesStateStatic(prevTiles)
-                })
-                setRenderCounter((prev) => prev + 1)
+                setTiles(setTilesStateStatic)
+                setRenderCounter(inc)
                 requestAnimationFrame(() => {
                     setTiles((prevTiles) => {
                         return slideAndMergeTiles(prevTiles, direction)
