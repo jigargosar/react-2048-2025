@@ -52,10 +52,13 @@ export function TileSlideDemo3() {
         setRenderCounter((prev) => prev + 1)
       }
     }
+    requestAnimationFrame( () =>{
+        setTiles(tiles)
+    })
 
     window.addEventListener('keydown', handleKeyDown)
     return () => { window.removeEventListener('keydown', handleKeyDown); }
-  }, [])
+  }, [tiles])
 
   return (
     <div
