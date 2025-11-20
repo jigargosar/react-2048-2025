@@ -51,7 +51,7 @@
 - Result: `[4(merged, from1=pos@0, from2=pos@1, value=2), 4(moved, from=pos@3), null, null]`
 
 **Test 13:** `[2, null, 4, null]`
-- Result: `[2(moved, from=pos@0), 4(moved, from=pos@2), null, null]`
+- Result: `[2(static), 4(moved, from=pos@2), null, null]`
 
 **Test 14:** `[2, 4, 8, 16]`
 - Result: `[2(static), 4(static), 8(static), 16(static)]`
