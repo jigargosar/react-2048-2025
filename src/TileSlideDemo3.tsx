@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Types
 type Position = { row: number; col: number }
@@ -40,7 +40,22 @@ function getTileTextColor(value: number): string {
 }
 
 export function TileSlideDemo3() {
-  const [tiles] = useState<Tile[]>(INITIAL_TILES)
+  const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
+  const [renderCounter, setRenderCounter] = useState(0)
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'ArrowLeft') {
+        setTiles((prevTiles) =>
+          prevTiles.map((tile) => ({ ...tile, state: { type: 'static' } }))
+        )
+        setRenderCounter((prev) => prev + 1)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => { window.removeEventListener('keydown', handleKeyDown); }
+  }, [])
 
   return (
     <div
@@ -58,6 +73,7 @@ export function TileSlideDemo3() {
       </h1>
 
       <div
+          key={renderCounter}
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
