@@ -5,7 +5,10 @@ import { keepNonNil, type Matrix, reverseRows, transpose } from './utils.ts'
 
 // Types
 type Position = { row: number; col: number }
-type TileState = { type: 'static' } | { type: 'moved'; from: Position }
+type TileState =
+    | { type: 'static' }
+    | { type: 'moved'; from: Position }
+    | { type: 'merged'; from1: Position; from2: Position; value: number }
 type Tile = { value: number; position: Position; state: TileState }
 type Direction = 'left' | 'right' | 'up' | 'down'
 type TileMatrix = Matrix<Tile | null>
@@ -81,18 +84,47 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
 // Slide tiles left in matrix
 function slideLeft(matrix: TileMatrix): TileMatrix {
     return matrix.map((row) => {
-        const tiles = row.filter((tile) => tile !== null)
+        const tiles = keepNonNil(row)
         const newRow: (Tile | null)[] = Array<Tile | null>(4).fill(null)
-        tiles.forEach((tile, newColIndex) => {
-            const oldCol = tile.position.col
-            const moved = oldCol !== newColIndex
-            newRow[newColIndex] = {
-                ...tile,
-                state: moved
-                    ? { type: 'moved', from: tile.position }
-                    : { type: 'static' },
+
+        let newColIndex = 0
+        let i = 0
+
+        while (i < tiles.length) {
+            const currentTile = tiles[i]
+            const nextTile = tiles[i + 1]
+
+            if (!currentTile) break
+
+            // Check if we can merge with next tile
+            if (nextTile && currentTile.value === nextTile.value) {
+                // Merge the two tiles
+                newRow[newColIndex] = {
+                    value: currentTile.value * 2,
+                    position: { row: currentTile.position.row, col: newColIndex },
+                    state: {
+                        type: 'merged',
+                        from1: currentTile.position,
+                        from2: nextTile.position,
+                        value: currentTile.value,
+                    },
+                }
+                i += 2 // Skip both tiles
+            } else {
+                // Just move the tile
+                const moved = currentTile.position.col !== newColIndex
+                newRow[newColIndex] = {
+                    value: currentTile.value,
+                    position: currentTile.position,
+                    state: moved
+                        ? { type: 'moved', from: currentTile.position }
+                        : { type: 'static' },
+                }
+                i += 1
             }
-        })
+            newColIndex++
+        }
+
         return newRow
     })
 }
@@ -200,36 +232,62 @@ export function TileSlideDemo3() {
                     height: '400px',
                 }}
             >
-                {tiles.map((tile, idx) => (
-                    <div
-                        key={idx}
-                        style={{
-                            gridColumn: tile.position.col + 1,
-                            gridRow: tile.position.row + 1,
-                            width: '100%',
-                            height: '100%',
-                            padding: '5px',
-                            boxSizing: 'border-box',
-                        }}
-                    >
+                {tiles.flatMap((tile, idx) => {
+                    const renderTile = (
+                        position: Position,
+                        value: number,
+                        key: string,
+                    ) => (
                         <div
+                            key={key}
                             style={{
+                                gridColumn: position.col + 1,
+                                gridRow: position.row + 1,
                                 width: '100%',
                                 height: '100%',
-                                backgroundColor: getTileColor(tile.value),
-                                color: getTileTextColor(tile.value),
-                                borderRadius: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: tile.value >= 1000 ? '35px' : '55px',
-                                fontWeight: 'bold',
+                                padding: '5px',
+                                boxSizing: 'border-box',
                             }}
                         >
-                            {tile.value}
+                            <div
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    backgroundColor: getTileColor(value),
+                                    color: getTileTextColor(value),
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: value >= 1000 ? '35px' : '55px',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {value}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+
+                    if (tile.state.type === 'merged') {
+                        // Render 3 tiles: two source tiles + merged tile
+                        return [
+                            renderTile(
+                                tile.state.from1,
+                                tile.state.value,
+                                `${String(idx)}-from1`,
+                            ),
+                            renderTile(
+                                tile.state.from2,
+                                tile.state.value,
+                                `${String(idx)}-from2`,
+                            ),
+                            renderTile(tile.position, tile.value, `${String(idx)}-merged`),
+                        ]
+                    } else {
+                        // Render single tile
+                        return [renderTile(tile.position, tile.value, String(idx))]
+                    }
+                })}
             </div>
         </div>
     )
