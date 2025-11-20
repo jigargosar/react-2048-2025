@@ -63,6 +63,19 @@ function setTilesStateStatic(tiles: Tile[]): Tile[] {
     }))
 }
 
+// Update tile positions based on their location in the matrix
+function setPositions(matrix: (Tile | null)[][]): (Tile | null)[][] {
+    return matrix.map((row, rowIndex) =>
+        row.map((tile, colIndex) => {
+            if (tile === null) return null
+            return {
+                ...tile,
+                position: { row: rowIndex, col: colIndex },
+            }
+        }),
+    )
+}
+
 // Slide tiles left in matrix
 function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
     return matrix.map((row) => {
@@ -88,24 +101,29 @@ export function TileSlideDemo3() {
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
-            if (event.key === 'ArrowLeft') {
+            const leftPressed = event.key === 'ArrowLeft'
+            if (leftPressed) {
                 setTiles((prevTiles) => {
                     return setTilesStateStatic(prevTiles)
                 })
-                setRenderCounter((prev) => prev + 1)
             }
-        }
-        requestAnimationFrame(() => {
-            setTiles((prevTiles) => {
-                return pipe(
-                    prevTiles,
-                    tilesToMatrix,
-                    slideLeft,
-                    flatten,
-                    keepNonNil,
-                )
+            setRenderCounter((prev) => prev + 1)
+            requestAnimationFrame(() => {
+                if (!leftPressed) {
+                    return
+                }
+                setTiles((prevTiles) => {
+                    return pipe(
+                        prevTiles,
+                        tilesToMatrix,
+                        slideLeft,
+                        setPositions,
+                        flatten,
+                        keepNonNil,
+                    )
+                })
             })
-        })
+        }
 
         window.addEventListener('keydown', handleKeyDown)
         return () => {
