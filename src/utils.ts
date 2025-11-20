@@ -9,6 +9,23 @@ export function reverseRows<T>(array: Matrix<T>): Matrix<T> {
     return array.map((row) => row.toReversed())
 }
 
-export function keep<T>(predicate: (item: T) => boolean, arr: T[]): T[] {
-    return arr.filter((item) => !predicate(item))
+export function keep<T>(
+    predicate: (item: T) => boolean,
+    arr: readonly T[],
+): T[] {
+    return arr.filter(predicate)
+}
+
+export function reject<T>(
+    predicate: (item: T) => boolean,
+    arr: readonly T[],
+): T[] {
+    return arr.filter((x) => {
+        return !predicate(x)
+    })
+}
+
+
+export function keepNonNil<T>(arr: readonly (T | null | undefined)[]): T[] {
+    return arr.filter((item): item is T => item !== null && item !== undefined)
 }

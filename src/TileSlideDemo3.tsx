@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { identity, isNotNil } from 'ramda'
+import { pipe } from 'fp-ts/function'
+import { flatten } from 'fp-ts/Array'
+import { keepNonNil } from './utils.ts'
 
 // Types
 type Position = { row: number; col: number }
@@ -53,6 +55,18 @@ function tilesToMatrix(tiles: Tile[]): (Tile | null)[][] {
     return matrix
 }
 
+// Slide tiles left in matrix
+function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
+    return matrix.map((row) => {
+        const tiles = row.filter((tile): tile is Tile => tile !== null)
+        const newRow: (Tile | null)[] = Array<Tile | null>(4).fill(null)
+        tiles.forEach((tile, index) => {
+            newRow[index] = tile
+        })
+        return newRow
+    })
+}
+
 export function TileSlideDemo3() {
     const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
     const [renderCounter, setRenderCounter] = useState(0)
@@ -61,9 +75,13 @@ export function TileSlideDemo3() {
         function handleKeyDown(event: KeyboardEvent) {
             if (event.key === 'ArrowLeft') {
                 setTiles((prevTiles) => {
-                    const matrix = tilesToMatrix(prevTiles)
-                    const nextTiles = matrix.flatMap(identity)
-                    return nextTiles.filter(isNotNil)
+                    return pipe(
+                        prevTiles,
+                        tilesToMatrix,
+                        slideLeft,
+                        flatten,
+                        keepNonNil,
+                    )
                 })
                 setRenderCounter((prev) => prev + 1)
             }
