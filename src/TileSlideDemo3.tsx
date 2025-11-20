@@ -253,12 +253,8 @@ export function TileSlideDemo3() {
                     height: '400px',
                 }}
             >
-                {tiles.flatMap((tile, idx) => {
-                    const renderTile = (
-                        position: Position,
-                        value: number,
-                        key: string,
-                    ) => (
+                {tiles.map((tile, idx) => {
+                    const renderTile = (position: Position, value: number, key?: string) => (
                         <div
                             key={key}
                             style={{
@@ -291,22 +287,16 @@ export function TileSlideDemo3() {
 
                     if (tile.state.type === 'merged') {
                         // Render 3 tiles: two source tiles + merged tile, all at final position
-                        return [
-                            renderTile(
-                                tile.position,
-                                tile.state.value,
-                                `${String(idx)}-from1`,
-                            ),
-                            renderTile(
-                                tile.position,
-                                tile.state.value,
-                                `${String(idx)}-from2`,
-                            ),
-                            renderTile(tile.position, tile.value, `${String(idx)}-merged`),
-                        ]
+                        return (
+                            <div key={String(idx)} style={{ display: 'contents' }}>
+                                {renderTile(tile.position, tile.state.value)}
+                                {renderTile(tile.position, tile.state.value)}
+                                {renderTile(tile.position, tile.value)}
+                            </div>
+                        )
                     } else {
                         // Render single tile
-                        return [renderTile(tile.position, tile.value, String(idx))]
+                        return renderTile(tile.position, tile.value, String(idx))
                     }
                 })}
             </div>
