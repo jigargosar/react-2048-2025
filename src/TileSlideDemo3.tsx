@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import { flatten } from 'fp-ts/Array'
-import { keepNonNil } from './utils.ts'
+import { keepNonNil, transpose, reverseRows } from './utils.ts'
 
 // Types
 type Position = { row: number; col: number }
@@ -105,9 +105,11 @@ function slideAndMergeMatrix(
         case 'left':
             return slideLeft(matrix)
         case 'right':
+            return reverseRows(slideLeft(reverseRows(matrix)))
         case 'up':
+            return transpose(slideLeft(transpose(matrix)))
         case 'down':
-            return slideLeft(matrix) // TODO: implement other directions
+            return transpose(reverseRows(slideLeft(reverseRows(transpose(matrix)))))
     }
 }
 
