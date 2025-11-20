@@ -101,11 +101,11 @@ function slideLeft(matrix: TileMatrix): TileMatrix {
                 // Merge the two tiles
                 newRow[newColIndex] = {
                     value: currentTile.value * 2,
-                    position: { row: currentTile.position.row, col: newColIndex },
+                    position: currentTile.position,
                     state: {
                         type: 'merged',
-                        from1: currentTile.position,
-                        from2: nextTile.position,
+                        from1: { ...currentTile.position },
+                        from2: { ...nextTile.position },
                         value: currentTile.value,
                     },
                 }
@@ -117,7 +117,7 @@ function slideLeft(matrix: TileMatrix): TileMatrix {
                     value: currentTile.value,
                     position: currentTile.position,
                     state: moved
-                        ? { type: 'moved', from: currentTile.position }
+                        ? { type: 'moved', from: { ...currentTile.position } }
                         : { type: 'static' },
                 }
                 i += 1
