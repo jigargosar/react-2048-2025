@@ -2,15 +2,18 @@ import { useState } from 'react'
 
 // Types
 type Position = { row: number; col: number }
-type Tile = { value: number; position: Position }
+type TileState =
+  | { type: 'static' }
+  | { type: 'moved'; from: Position }
+type Tile = { value: number; position: Position; state: TileState }
 
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
-  { value: 2, position: { row: 0, col: 0 } },
-  { value: 4, position: { row: 0, col: 2 } },
-  { value: 2, position: { row: 1, col: 1 } },
-  { value: 8, position: { row: 2, col: 3 } },
-  { value: 2, position: { row: 3, col: 2 } },
+  { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
+  { value: 4, position: { row: 0, col: 2 }, state: { type: 'static' } },
+  { value: 2, position: { row: 1, col: 1 }, state: { type: 'static' } },
+  { value: 8, position: { row: 2, col: 3 }, state: { type: 'static' } },
+  { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
 ]
 
 // Helper to get tile background color
