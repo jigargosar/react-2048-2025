@@ -39,6 +39,22 @@ function getTileTextColor(value: number): string {
   return value <= 4 ? '#776e65' : '#f9f6f2'
 }
 
+// Normalize tiles after sliding
+function normalizeTiles(tiles: Tile[]): Tile[] {
+  // Step 1: Create matrix from tiles
+  const matrix: (Tile | null)[][] = Array.from({ length: 4 }, () =>
+    Array<Tile | null>(4).fill(null)
+  )
+  for (const tile of tiles) {
+    const row = matrix[tile.position.row]
+    if (row) {
+      row[tile.position.col] = tile
+    }
+  }
+
+  return tiles
+}
+
 export function TileSlideDemo3() {
   const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
   const [renderCounter, setRenderCounter] = useState(0)
@@ -46,9 +62,7 @@ export function TileSlideDemo3() {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'ArrowLeft') {
-        setTiles((prevTiles) =>
-          prevTiles.map((tile) => ({ ...tile, state: { type: 'static' } }))
-        )
+        setTiles((prevTiles) => normalizeTiles(prevTiles))
         setRenderCounter((prev) => prev + 1)
       }
     }
