@@ -11,6 +11,7 @@ type TileState =
     | { type: 'merged'; from1: Position; from2: Position; value: number }
 type Tile = { value: number; position: Position; state: TileState }
 type Direction = 'left' | 'right' | 'up' | 'down'
+type TileRow = readonly (Tile | null)[]
 type TileMatrix = Matrix<Tile | null>
 
 // Hardcoded initial tiles
@@ -82,7 +83,7 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
 }
 
 // Slide a single row of tiles left
-function slideRowLeft(row: readonly (Tile | null)[]): (Tile | null)[] {
+function slideRowLeft(row: TileRow): (Tile | null)[] {
     return [...row]
 }
 
