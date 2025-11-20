@@ -7,6 +7,7 @@ import { keepNonNil } from './utils.ts'
 type Position = { row: number; col: number }
 type TileState = { type: 'static' } | { type: 'moved'; from: Position }
 type Tile = { value: number; position: Position; state: TileState }
+type Direction = 'left' | 'right' | 'up' | 'down'
 
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
@@ -95,34 +96,61 @@ function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
     })
 }
 
+// Slide tiles in the specified direction
+function slideInDirection(
+    matrix: (Tile | null)[][],
+    direction: Direction,
+): (Tile | null)[][] {
+    switch (direction) {
+        case 'left':
+            return slideLeft(matrix)
+        case 'right':
+        case 'up':
+        case 'down':
+            return slideLeft(matrix) // TODO: implement other directions
+    }
+}
+
 export function TileSlideDemo3() {
     const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
     const [renderCounter, setRenderCounter] = useState(0)
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
-            const leftPressed = event.key === 'ArrowLeft'
-            if (leftPressed) {
+            let direction: Direction | null = null
+            switch (event.key) {
+                case 'ArrowLeft':
+                    direction = 'left'
+                    break
+                case 'ArrowRight':
+                    direction = 'right'
+                    break
+                case 'ArrowUp':
+                    direction = 'up'
+                    break
+                case 'ArrowDown':
+                    direction = 'down'
+                    break
+            }
+
+            if (direction) {
                 setTiles((prevTiles) => {
                     return setTilesStateStatic(prevTiles)
                 })
-            }
-            setRenderCounter((prev) => prev + 1)
-            requestAnimationFrame(() => {
-                if (!leftPressed) {
-                    return
-                }
-                setTiles((prevTiles) => {
-                    return pipe(
-                        prevTiles,
-                        tilesToMatrix,
-                        slideLeft,
-                        setPositions,
-                        flatten,
-                        keepNonNil,
-                    )
+                setRenderCounter((prev) => prev + 1)
+                requestAnimationFrame(() => {
+                    setTiles((prevTiles) => {
+                        return pipe(
+                            prevTiles,
+                            tilesToMatrix,
+                            (matrix) => slideInDirection(matrix, direction),
+                            setPositions,
+                            flatten,
+                            keepNonNil,
+                        )
+                    })
                 })
-            })
+            }
         }
 
         window.addEventListener('keydown', handleKeyDown)
