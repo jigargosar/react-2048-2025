@@ -78,8 +78,3 @@ function slideAndMergeRowLeft(row: TileRow): TileRow
 - **ONLY** use array indices for all slide/merge logic
 - **ONLY** copy `tile.position` to state fields: `from`, `from1`, `from2`
 - When creating merged tile: copy one of the source tile positions to `position` field (will be updated later by `setPositionsFromMatrix`)
-
-**State computation:**
-- Use array indices to detect moves: compare source index with target index
-- Use array indices to detect merges: check adjacent tiles in result array
-- All logic must work purely with indices, positions are only copied for rendering
