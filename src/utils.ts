@@ -8,3 +8,7 @@ export function transpose<T>(array: Matrix<T>): Matrix<T | null> {
 export function reverseRows<T>(array: Matrix<T>): Matrix<T> {
     return array.map((row) => row.toReversed())
 }
+
+export function keep<T>(predicate: (item: T) => boolean, arr: T[]): T[] {
+    return arr.filter((item) => !predicate(item))
+}
