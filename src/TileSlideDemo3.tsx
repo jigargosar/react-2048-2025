@@ -186,6 +186,54 @@ function slideAndMergeTiles(tiles: Tile[], direction: Direction): Tile[] {
     )
 }
 
+function renderTile(position: Position, value: number) {
+    return (
+        <div
+            style={{
+                gridColumn: position.col + 1,
+                gridRow: position.row + 1,
+                width: '100%',
+                height: '100%',
+                padding: '5px',
+                boxSizing: 'border-box',
+            }}
+        >
+            <div
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: getTileColor(value),
+                    color: getTileTextColor(value),
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: value >= 1000 ? '35px' : '55px',
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </div>
+        </div>
+    )
+}
+
+function renderTiles(tiles: Tile[]) {
+    return tiles.map((tile, index) => {
+        if (tile.state.type === 'merged') {
+            return (
+                <div key={String(index)} style={{ display: 'contents' }}>
+                    {renderTile(tile.position, tile.state.value)}
+                    {renderTile(tile.position, tile.state.value)}
+                    {renderTile(tile.position, tile.value)}
+                </div>
+            )
+        } else {
+            return <div key={String(index)}>{renderTile(tile.position, tile.value)}</div>
+        }
+    })
+}
+
 export function TileSlideDemo3() {
     const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
     const [renderCounter, setRenderCounter] = useState(0)
@@ -253,52 +301,7 @@ export function TileSlideDemo3() {
                     height: '400px',
                 }}
             >
-                {tiles.map((tile, idx) => {
-                    const renderTile = (position: Position, value: number, key?: string) => (
-                        <div
-                            key={key}
-                            style={{
-                                gridColumn: position.col + 1,
-                                gridRow: position.row + 1,
-                                width: '100%',
-                                height: '100%',
-                                padding: '5px',
-                                boxSizing: 'border-box',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    backgroundColor: getTileColor(value),
-                                    color: getTileTextColor(value),
-                                    borderRadius: '4px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: value >= 1000 ? '35px' : '55px',
-                                    fontWeight: 'bold',
-                                }}
-                            >
-                                {value}
-                            </div>
-                        </div>
-                    )
-
-                    if (tile.state.type === 'merged') {
-                        // Render 3 tiles: two source tiles + merged tile, all at final position
-                        return (
-                            <div key={String(idx)} style={{ display: 'contents' }}>
-                                {renderTile(tile.position, tile.state.value)}
-                                {renderTile(tile.position, tile.state.value)}
-                                {renderTile(tile.position, tile.value)}
-                            </div>
-                        )
-                    } else {
-                        // Render single tile
-                        return renderTile(tile.position, tile.value, String(idx))
-                    }
-                })}
+                {renderTiles(tiles)}
             </div>
         </div>
     )
