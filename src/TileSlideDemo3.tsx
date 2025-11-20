@@ -2,15 +2,15 @@ import { useState } from 'react'
 
 // Types
 type Position = { row: number; col: number }
-type Tile = { id: number; value: number; position: Position }
+type Tile = { value: number; position: Position }
 
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
-  { id: 1, value: 2, position: { row: 0, col: 0 } },
-  { id: 2, value: 4, position: { row: 0, col: 2 } },
-  { id: 3, value: 2, position: { row: 1, col: 1 } },
-  { id: 4, value: 8, position: { row: 2, col: 3 } },
-  { id: 5, value: 2, position: { row: 3, col: 2 } },
+  { value: 2, position: { row: 0, col: 0 } },
+  { value: 4, position: { row: 0, col: 2 } },
+  { value: 2, position: { row: 1, col: 1 } },
+  { value: 8, position: { row: 2, col: 3 } },
+  { value: 2, position: { row: 3, col: 2 } },
 ]
 
 // Helper to get tile background color
@@ -66,9 +66,9 @@ export function TileSlideDemo3() {
           height: '400px',
         }}
       >
-        {tiles.map((tile) => (
+        {tiles.map((tile, idx) => (
           <div
-            key={tile.id}
+            key={idx}
             style={{
               gridColumn: tile.position.col + 1,
               gridRow: tile.position.row + 1,
