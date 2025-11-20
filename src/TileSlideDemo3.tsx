@@ -49,8 +49,8 @@ function getTileTextColor(value: number): string {
 
 // Convert tiles array to 4x4 matrix
 function tilesToMatrix(tiles: Tile[]): TileMatrix {
-    const matrix: (Tile | null)[][] = Array.from({ length: 4 }, () =>
-        Array<Tile | null>(4).fill(null),
+    const matrix: MaybeTile[][] = Array.from({ length: 4 }, () =>
+        Array<MaybeTile>(4).fill(null),
     )
     for (const tile of tiles) {
         const row = matrix[tile.position.row]
@@ -83,14 +83,14 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
     )
 }
 
-// Slide a single row of tiles left
-function slideRowLeft(row: TileRow): MaybeTile[] {
+// Slide and merge a single row of tiles left
+function slideAndMergeRowLeft(row: TileRow): MaybeTile[] {
     return [...row]
 }
 
 // Slide tiles left in matrix
 function slideLeft(matrix: TileMatrix): TileMatrix {
-    return matrix.map(slideRowLeft)
+    return matrix.map(slideAndMergeRowLeft)
 }
 
 // Slide tiles in the specified direction
