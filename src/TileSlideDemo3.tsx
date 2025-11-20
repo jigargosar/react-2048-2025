@@ -55,13 +55,28 @@ function tilesToMatrix(tiles: Tile[]): (Tile | null)[][] {
     return matrix
 }
 
+// Set all tiles state to static
+function setTilesStateStatic(tiles: Tile[]): Tile[] {
+    return tiles.map((tile) => ({
+        ...tile,
+        state: { type: 'static' },
+    }))
+}
+
 // Slide tiles left in matrix
 function slideLeft(matrix: (Tile | null)[][]): (Tile | null)[][] {
     return matrix.map((row) => {
         const tiles = row.filter((tile): tile is Tile => tile !== null)
         const newRow: (Tile | null)[] = Array<Tile | null>(4).fill(null)
-        tiles.forEach((tile, index) => {
-            newRow[index] = tile
+        tiles.forEach((tile, newColIndex) => {
+            const oldCol = tile.position.col
+            const moved = oldCol !== newColIndex
+            newRow[newColIndex] = {
+                ...tile,
+                state: moved
+                    ? { type: 'moved', from: tile.position }
+                    : { type: 'static' },
+            }
         })
         return newRow
     })
@@ -75,19 +90,21 @@ export function TileSlideDemo3() {
         function handleKeyDown(event: KeyboardEvent) {
             if (event.key === 'ArrowLeft') {
                 setTiles((prevTiles) => {
-                    return pipe(
-                        prevTiles,
-                        tilesToMatrix,
-                        slideLeft,
-                        flatten,
-                        keepNonNil,
-                    )
+                    return setTilesStateStatic(prevTiles)
                 })
                 setRenderCounter((prev) => prev + 1)
             }
         }
         requestAnimationFrame(() => {
-            setTiles(tiles)
+            setTiles((prevTiles) => {
+                return pipe(
+                    prevTiles,
+                    tilesToMatrix,
+                    slideLeft,
+                    flatten,
+                    keepNonNil,
+                )
+            })
         })
 
         window.addEventListener('keydown', handleKeyDown)
