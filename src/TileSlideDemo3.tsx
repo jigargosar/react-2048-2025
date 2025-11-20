@@ -81,52 +81,14 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
     )
 }
 
+// Slide a single row of tiles left
+function slideRowLeft(row: readonly (Tile | null)[]): (Tile | null)[] {
+    return [...row]
+}
+
 // Slide tiles left in matrix
 function slideLeft(matrix: TileMatrix): TileMatrix {
-    return matrix.map((row) => {
-        const tiles = keepNonNil(row)
-        const newRow: (Tile | null)[] = Array<Tile | null>(4).fill(null)
-
-        let newColIndex = 0
-        let i = 0
-
-        while (i < tiles.length) {
-            const currentTile = tiles[i]
-            const nextTile = tiles[i + 1]
-
-            if (!currentTile) break
-
-            // Check if we can merge with next tile
-            if (nextTile && currentTile.value === nextTile.value) {
-                // Merge the two tiles
-                newRow[newColIndex] = {
-                    value: currentTile.value * 2,
-                    position: currentTile.position,
-                    state: {
-                        type: 'merged',
-                        from1: { ...currentTile.position },
-                        from2: { ...nextTile.position },
-                        value: currentTile.value,
-                    },
-                }
-                i += 2 // Skip both tiles
-            } else {
-                // Just move the tile
-                const moved = currentTile.position.col !== newColIndex
-                newRow[newColIndex] = {
-                    value: currentTile.value,
-                    position: currentTile.position,
-                    state: moved
-                        ? { type: 'moved', from: { ...currentTile.position } }
-                        : { type: 'static' },
-                }
-                i += 1
-            }
-            newColIndex++
-        }
-
-        return newRow
-    })
+    return matrix.map(slideRowLeft)
 }
 
 // Slide tiles in the specified direction
