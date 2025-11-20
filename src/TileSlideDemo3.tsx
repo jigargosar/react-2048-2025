@@ -85,7 +85,57 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
 
 // Slide and merge a single row of tiles left
 function slideAndMergeRowLeft(row: TileRow): TileRow {
-    return [...row]
+    // Filter non-null tiles and keep their original indices
+    const nonNullTiles: Array<{ tile: Tile; originalIndex: number }> = []
+    for (let i = 0; i < row.length; i++) {
+        const tile = row[i]
+        if (tile !== null) {
+            nonNullTiles.push({ tile, originalIndex: i })
+        }
+    }
+
+    // Build result array with merging logic
+    const result: MaybeTile[] = [null, null, null, null]
+    let writePos = 0
+
+    for (const { tile, originalIndex } of nonNullTiles) {
+        const prevTile = result[writePos - 1]
+
+        // Check if we can merge with previous tile
+        if (
+            writePos > 0 &&
+            prevTile !== null &&
+            prevTile.state.type !== 'merged' &&
+            prevTile.value === tile.value
+        ) {
+            // Merge: replace previous tile with merged version
+            result[writePos - 1] = {
+                value: tile.value * 2,
+                position: prevTile.position, // Will be updated by setPositionsFromMatrix
+                state: {
+                    type: 'merged',
+                    from1: prevTile.position,
+                    from2: tile.position,
+                    value: tile.value,
+                },
+            }
+            // Don't advance writePos - next tile writes after the merged tile
+        } else {
+            // No merge: determine state and write tile
+            const state: TileState =
+                writePos === originalIndex
+                    ? { type: 'static' }
+                    : { type: 'moved', from: tile.position }
+
+            result[writePos] = {
+                ...tile,
+                state,
+            }
+            writePos++
+        }
+    }
+
+    return result
 }
 
 // Slide tiles left in matrix
@@ -233,15 +283,15 @@ export function TileSlideDemo3() {
                     )
 
                     if (tile.state.type === 'merged') {
-                        // Render 3 tiles: two source tiles + merged tile
+                        // Render 3 tiles: two source tiles + merged tile, all at final position
                         return [
                             renderTile(
-                                tile.state.from1,
+                                tile.position,
                                 tile.state.value,
                                 `${String(idx)}-from1`,
                             ),
                             renderTile(
-                                tile.state.from2,
+                                tile.position,
                                 tile.state.value,
                                 `${String(idx)}-from2`,
                             ),
