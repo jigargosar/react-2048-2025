@@ -83,6 +83,30 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
     )
 }
 
+function createStaticTile(tile: Tile): Tile {
+    return { ...tile, state: { type: 'static' } }
+}
+
+function createMovedTile(tile: Tile): Tile {
+    return {
+        ...tile,
+        state: { type: 'moved', from: tile.position },
+    }
+}
+
+function createMergedTile(tile1: Tile, tile2: Tile): Tile {
+    return {
+        value: tile1.value * 2,
+        position: tile1.position,
+        state: {
+            type: 'merged',
+            from1: tile1.position,
+            from2: tile2.position,
+            value: tile1.value,
+        },
+    }
+}
+
 // Slide and merge a single row of tiles left
 function slideAndMergeRowLeft(row: TileRow): TileRow {
     // Filter non-null tiles and keep their original indices
@@ -108,28 +132,12 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
             prevTile.value === tile.value
         ) {
             // Merge: replace previous tile with merged version
-            result[writePos - 1] = {
-                value: tile.value * 2,
-                position: prevTile.position, // Will be updated by setPositionsFromMatrix
-                state: {
-                    type: 'merged',
-                    from1: prevTile.position,
-                    from2: tile.position,
-                    value: tile.value,
-                },
-            }
-            // Don't advance writePos - next tile writes after the merged tile
+            result[writePos - 1] = createMergedTile(prevTile, tile)
         } else {
             // No merge: determine state and write tile
-            const state: TileState =
-                writePos === originalIndex
-                    ? { type: 'static' }
-                    : { type: 'moved', from: tile.position }
-
-            result[writePos] = {
-                ...tile,
-                state,
-            }
+            const newTile =
+                writePos === originalIndex ? createStaticTile(tile) : createMovedTile(tile)
+            result[writePos] = newTile
             writePos++
         }
     }
