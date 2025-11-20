@@ -84,7 +84,7 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
 }
 
 // Slide and merge a single row of tiles left
-function slideAndMergeRowLeft(row: TileRow): MaybeTile[] {
+function slideAndMergeRowLeft(row: TileRow): TileRow {
     return [...row]
 }
 

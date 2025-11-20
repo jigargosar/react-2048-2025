@@ -61,3 +61,25 @@
 
 **Test 16:** `[2, 4, 8, null]`
 - Result: `[2(static), 4(static), 8(static), null]`
+
+## Implementation Requirements
+
+**Function signature:**
+```typescript
+function slideAndMergeRowLeft(row: TileRow): TileRow
+```
+- **DO NOT** modify the signature
+- Input: `TileRow` (readonly array of 4 MaybeTiles)
+- Output: `TileRow` (readonly array of 4 MaybeTiles)
+
+**Position handling:**
+- **DO NOT** read `tile.position` for logic/computation
+- **DO NOT** write to `tile.position` except when creating merged tile
+- **ONLY** use array indices for all slide/merge logic
+- **ONLY** copy `tile.position` to state fields: `from`, `from1`, `from2`
+- When creating merged tile: copy one of the source tile positions to `position` field (will be updated later by `setPositionsFromMatrix`)
+
+**State computation:**
+- Use array indices to detect moves: compare source index with target index
+- Use array indices to detect merges: check adjacent tiles in result array
+- All logic must work purely with indices, positions are only copied for rendering
