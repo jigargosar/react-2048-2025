@@ -31,6 +31,13 @@ export default defineConfig([
                     assertionStyle: 'never',
                 },
             ],
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: 'TSTypePredicate',
+                    message: 'Type predicates (is) are not allowed. Use proper type narrowing instead.',
+                },
+            ],
         },
     },
 ])

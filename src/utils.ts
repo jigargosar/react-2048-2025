@@ -27,5 +27,11 @@ export function reject<T>(
 
 
 export function keepNonNil<T>(arr: readonly (T | null | undefined)[]): T[] {
-    return arr.filter((item): item is T => item !== null && item !== undefined)
+    const result: T[] = []
+    for (const item of arr) {
+        if (item !== null && item !== undefined) {
+            result.push(item)
+        }
+    }
+    return result
 }
