@@ -89,7 +89,7 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
     const nonNullTiles: Array<{ tile: Tile; originalIndex: number }> = []
     for (let i = 0; i < row.length; i++) {
         const tile = row[i]
-        if (tile !== null) {
+        if (tile != null) {
             nonNullTiles.push({ tile, originalIndex: i })
         }
     }
@@ -99,12 +99,11 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
     let writePos = 0
 
     for (const { tile, originalIndex } of nonNullTiles) {
-        const prevTile = result[writePos - 1]
+        const prevTile = writePos > 0 ? result[writePos - 1] : undefined
 
         // Check if we can merge with previous tile
         if (
-            writePos > 0 &&
-            prevTile !== null &&
+            prevTile != null &&
             prevTile.state.type !== 'merged' &&
             prevTile.value === tile.value
         ) {
