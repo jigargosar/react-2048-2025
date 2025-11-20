@@ -81,7 +81,7 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
 // Slide tiles left in matrix
 function slideLeft(matrix: TileMatrix): TileMatrix {
     return matrix.map((row) => {
-        const tiles = row.filter((tile): tile is Tile => tile !== null)
+        const tiles = row.filter((tile) => tile !== null)
         const newRow: (Tile | null)[] = Array<Tile | null>(4).fill(null)
         tiles.forEach((tile, newColIndex) => {
             const oldCol = tile.position.col
@@ -98,7 +98,10 @@ function slideLeft(matrix: TileMatrix): TileMatrix {
 }
 
 // Slide tiles in the specified direction
-function slideAndMergeMatrix(matrix: TileMatrix, direction: Direction,): TileMatrix {
+function slideAndMergeMatrix(
+    matrix: TileMatrix,
+    direction: Direction,
+): TileMatrix {
     switch (direction) {
         case 'left':
             return slideLeft(matrix)

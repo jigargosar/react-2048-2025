@@ -24,5 +24,13 @@ export default defineConfig([
                 project: ['./tsconfig.app.json', './tsconfig.node.json'],
             },
         },
+        rules: {
+            '@typescript-eslint/consistent-type-assertions': [
+                'error',
+                {
+                    assertionStyle: 'never',
+                },
+            ],
+        },
     },
 ])
