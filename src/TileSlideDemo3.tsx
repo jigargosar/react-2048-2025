@@ -10,9 +10,10 @@ type TileState =
     | { type: 'moved'; from: Position }
     | { type: 'merged'; from1: Position; from2: Position; value: number }
 type Tile = { value: number; position: Position; state: TileState }
+type MaybeTile = Tile | null
 type Direction = 'left' | 'right' | 'up' | 'down'
-type TileRow = readonly (Tile | null)[]
-type TileMatrix = Matrix<Tile | null>
+type TileRow = readonly MaybeTile[]
+type TileMatrix = Matrix<MaybeTile>
 
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
@@ -83,7 +84,7 @@ function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
 }
 
 // Slide a single row of tiles left
-function slideRowLeft(row: TileRow): (Tile | null)[] {
+function slideRowLeft(row: TileRow): MaybeTile[] {
     return [...row]
 }
 
