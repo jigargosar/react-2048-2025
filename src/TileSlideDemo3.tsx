@@ -136,7 +136,9 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
         } else {
             // No merge: determine state and write tile
             const newTile =
-                writePos === originalIndex ? createStaticTile(tile) : createMovedTile(tile)
+                writePos === originalIndex
+                    ? createStaticTile(tile)
+                    : createMovedTile(tile)
             result[writePos] = newTile
             writePos++
         }
@@ -229,7 +231,11 @@ function renderTiles(tiles: Tile[]) {
                 </div>
             )
         } else {
-            return <div key={String(index)}>{renderTile(tile.position, tile.value)}</div>
+            return (
+                <div key={String(index)} style={{ display: 'contents' }}>
+                    {renderTile(tile.position, tile.value)}
+                </div>
+            )
         }
     })
 }
