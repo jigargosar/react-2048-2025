@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './main.css'
+import './styles.css'
 import { TileSlideDemo3 } from './TileSlideDemo3'
 
 const rootElement = document.getElementById('root')

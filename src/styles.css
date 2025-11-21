@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+:root {
+    --offset-x: 0;
+    --offset-y: 0;
+}
+
+.tile-move-anim {
+    animation: slide-tile 150ms ease-in-out;
+}
+
+@keyframes slide-tile {
+    from {
+        transform: translate(var(--offset-x), var(--offset-y));
+    }
+    to {
+        transform: translate(0, 0);
+    }
+}
