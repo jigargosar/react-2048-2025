@@ -24,29 +24,6 @@ const INITIAL_TILES: Tile[] = [
     { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
 ]
 
-// Helper to get tile background color
-function getTileColor(value: number): string {
-    const colors: Record<number, string> = {
-        2: '#eee4da',
-        4: '#ede0c8',
-        8: '#f2b179',
-        16: '#f59563',
-        32: '#f67c5f',
-        64: '#f65e3b',
-        128: '#edcf72',
-        256: '#edcc61',
-        512: '#edc850',
-        1024: '#edc53f',
-        2048: '#edc22e',
-    }
-    return colors[value] || '#cdc1b4'
-}
-
-// Helper to get tile text color
-function getTileTextColor(value: number): string {
-    return value <= 4 ? '#776e65' : '#f9f6f2'
-}
-
 // Convert tiles array to 4x4 matrix
 function tilesToMatrix(tiles: Tile[]): TileMatrix {
     const matrix: MaybeTile[][] = Array.from({ length: 4 }, () =>
@@ -188,54 +165,7 @@ function slideAndMergeTiles(tiles: Tile[], direction: Direction): Tile[] {
     )
 }
 
-function renderTile(position: Position, value: number, key?: string) {
-    return (
-        <div
-            key={key}
-            style={{
-                gridColumn: position.col + 1,
-                gridRow: position.row + 1,
-                width: '100%',
-                height: '100%',
-                padding: '5px',
-                boxSizing: 'border-box',
-            }}
-        >
-            <div
-                style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: getTileColor(value),
-                    color: getTileTextColor(value),
-                    borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: value >= 1000 ? '35px' : '55px',
-                    fontWeight: 'bold',
-                }}
-            >
-                {value}
-            </div>
-        </div>
-    )
-}
-
-function renderTiles(tiles: Tile[]) {
-    return tiles.map((tile, index) => {
-        if (tile.state.type === 'merged') {
-            return (
-                <div key={String(index)} style={{ display: 'contents' }}>
-                    {renderTile(tile.position, tile.state.value)}
-                    {renderTile(tile.position, tile.state.value)}
-                    {renderTile(tile.position, tile.value)}
-                </div>
-            )
-        } else {
-            return renderTile(tile.position, tile.value, String(index))
-        }
-    })
-}
+// VIEW
 
 export function TileSlideDemo3() {
     const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
@@ -308,4 +238,74 @@ export function TileSlideDemo3() {
             </div>
         </div>
     )
+}
+
+function getTileColor(value: number): string {
+    const colors: Record<number, string> = {
+        2: '#eee4da',
+        4: '#ede0c8',
+        8: '#f2b179',
+        16: '#f59563',
+        32: '#f67c5f',
+        64: '#f65e3b',
+        128: '#edcf72',
+        256: '#edcc61',
+        512: '#edc850',
+        1024: '#edc53f',
+        2048: '#edc22e',
+    }
+    return colors[value] || '#cdc1b4'
+}
+
+function getTileTextColor(value: number): string {
+    return value <= 4 ? '#776e65' : '#f9f6f2'
+}
+
+function renderTile(position: Position, value: number, key?: string) {
+    return (
+        <div
+            key={key}
+            style={{
+                gridColumn: position.col + 1,
+                gridRow: position.row + 1,
+                width: '100%',
+                height: '100%',
+                padding: '5px',
+                boxSizing: 'border-box',
+            }}
+        >
+            <div
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: getTileColor(value),
+                    color: getTileTextColor(value),
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: value >= 1000 ? '35px' : '55px',
+                    fontWeight: 'bold',
+                }}
+            >
+                {value}
+            </div>
+        </div>
+    )
+}
+
+function renderTiles(tiles: Tile[]) {
+    return tiles.map((tile, index) => {
+        if (tile.state.type === 'merged') {
+            return (
+                <div key={String(index)} style={{ display: 'contents' }}>
+                    {renderTile(tile.position, tile.state.value)}
+                    {renderTile(tile.position, tile.state.value)}
+                    {renderTile(tile.position, tile.value)}
+                </div>
+            )
+        } else {
+            return renderTile(tile.position, tile.value, String(index))
+        }
+    })
 }
