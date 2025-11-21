@@ -20,6 +20,11 @@ type TileMatrix = Matrix<MaybeTile>
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 4
 
+const POSITION_GRID: Position[][] = Array.from({ length: GRID_SIZE }, (_, row) =>
+    Array.from({ length: GRID_SIZE }, (_, col) => ({ row, col })),
+)
+const ALL_POSITIONS: Position[] = POSITION_GRID.flat()
+
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
     { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
@@ -30,16 +35,8 @@ const INITIAL_TILES: Tile[] = [
 ]
 
 function getEmptyPositions(tiles: Tile[]): Position[] {
-    const occupied = new Set(tiles.map((t) => `${String(t.position.row)},${String(t.position.col)}`))
-    const empty: Position[] = []
-    for (let row = 0; row < GRID_SIZE; row++) {
-        for (let col = 0; col < GRID_SIZE; col++) {
-            if (!occupied.has(`${String(row)},${String(col)}`)) {
-                empty.push({ row, col })
-            }
-        }
-    }
-    return empty
+    const matrix = tilesToMatrix(tiles)
+    return ALL_POSITIONS.filter((p) => matrix[p.row]?.[p.col] === null)
 }
 
 function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
@@ -215,6 +212,12 @@ function parseDirectionFromKey(key: string): Direction | null {
     }
 }
 
+function move(tiles: Tile[], direction: Direction): Tile[] {
+    const movedTiles = slideAndMergeTiles(tiles, direction)
+    const hasMoved = movedTiles.some((t) => t.state.type !== 'static')
+    return hasMoved ? spawnRandomTiles(movedTiles, TILES_TO_SPAWN) : movedTiles
+}
+
 // VIEW
 
 function useTileSlide() {
@@ -224,16 +227,13 @@ function useTileSlide() {
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             const direction = parseDirectionFromKey(event.key)
-            if (direction) {
-                setTiles(setTilesStateStatic)
-                setRenderCounter(inc)
-                requestAnimationFrame(() => {
-                    setTiles((prevTiles) => {
-                        const movedTiles = slideAndMergeTiles(prevTiles, direction)
-                        return spawnRandomTiles(movedTiles, TILES_TO_SPAWN)
-                    })
-                })
-            }
+            if (!direction) return
+
+            setTiles(setTilesStateStatic)
+            setRenderCounter(inc)
+            requestAnimationFrame(() => {
+                setTiles((prevTiles) => move(prevTiles, direction))
+            })
         }
 
         window.addEventListener('keydown', handleKeyDown)
