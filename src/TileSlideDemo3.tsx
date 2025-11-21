@@ -188,9 +188,10 @@ function slideAndMergeTiles(tiles: Tile[], direction: Direction): Tile[] {
     )
 }
 
-function renderTile(position: Position, value: number) {
+function renderTile(position: Position, value: number, key?: string) {
     return (
         <div
+            key={key}
             style={{
                 gridColumn: position.col + 1,
                 gridRow: position.row + 1,
@@ -231,11 +232,7 @@ function renderTiles(tiles: Tile[]) {
                 </div>
             )
         } else {
-            return (
-                <div key={String(index)} style={{ display: 'contents' }}>
-                    {renderTile(tile.position, tile.value)}
-                </div>
-            )
+            return renderTile(tile.position, tile.value, String(index))
         }
     })
 }
