@@ -165,30 +165,30 @@ function slideAndMergeTiles(tiles: Tile[], direction: Direction): Tile[] {
     )
 }
 
+function parseDirectionFromKey(key: string): Direction | null {
+    switch (key) {
+        case 'ArrowLeft':
+            return 'left'
+        case 'ArrowRight':
+            return 'right'
+        case 'ArrowUp':
+            return 'up'
+        case 'ArrowDown':
+            return 'down'
+        default:
+            return null
+    }
+}
+
 // VIEW
 
-export function TileSlideDemo3() {
+function useTileSlide() {
     const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
     const [renderCounter, setRenderCounter] = useState(0)
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
-            let direction: Direction | null = null
-            switch (event.key) {
-                case 'ArrowLeft':
-                    direction = 'left'
-                    break
-                case 'ArrowRight':
-                    direction = 'right'
-                    break
-                case 'ArrowUp':
-                    direction = 'up'
-                    break
-                case 'ArrowDown':
-                    direction = 'down'
-                    break
-            }
-
+            const direction = parseDirectionFromKey(event.key)
             if (direction) {
                 setTiles(setTilesStateStatic)
                 setRenderCounter(inc)
@@ -204,7 +204,13 @@ export function TileSlideDemo3() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [tiles])
+    }, [])
+
+    return { tiles, renderCounter }
+}
+
+export function TileSlideDemo3() {
+    const { tiles, renderCounter } = useTileSlide()
 
     return (
         <div
