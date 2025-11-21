@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useEffect, useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import { flatten, inc } from 'ramda'
@@ -112,11 +113,11 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
             result[writePos - 1] = createMergedTile(prevTile, tile)
         } else {
             // No merge: determine state and write tile
-            const newTile =
+
+            result[writePos] =
                 writePos === originalIndex
                     ? createStaticTile(tile)
                     : createMovedTile(tile)
-            result[writePos] = newTile
             writePos++
         }
     }
@@ -267,25 +268,36 @@ function getTileTextColor(value: number): string {
     return value <= 4 ? '#776e65' : '#f9f6f2'
 }
 
-function renderTile(
-    position: Position,
-    value: number,
-    className: string,
-    key?: string,
-) {
+type TileStyle = React.CSSProperties & {
+    '--offset-x': string
+    '--offset-y': string
+}
+
+type TileRenderProps = {
+    from: Position
+    to: Position
+    value: number
+    animClass: string
+    key?: string
+}
+
+function renderTile({ from, to, value, animClass, key }: TileRenderProps) {
+    const offsetX = (from.col - to.col) * 100
+    const offsetY = (from.row - to.row) * 100
+
+    const style: TileStyle = {
+        gridColumn: to.col + 1,
+        gridRow: to.row + 1,
+        width: '100%',
+        height: '100%',
+        padding: '5px',
+        boxSizing: 'border-box',
+        '--offset-x': `${String(offsetX)}%`,
+        '--offset-y': `${String(offsetY)}%`,
+    }
+
     return (
-        <div
-            key={key}
-            className={className}
-            style={{
-                gridColumn: position.col + 1,
-                gridRow: position.row + 1,
-                width: '100%',
-                height: '100%',
-                padding: '5px',
-                boxSizing: 'border-box',
-            }}
-        >
+        <div key={key} className={animClass} style={style}>
             <div
                 style={{
                     width: '100%',
@@ -308,18 +320,46 @@ function renderTile(
 
 function renderTiles(tiles: Tile[]) {
     return tiles.map((tile, index) => {
-        if (tile.state.type === 'merged') {
-            return (
-                <div key={String(index)} style={{ display: 'contents' }}>
-                    {renderTile(tile.position, tile.state.value, 'tile-move-anim')}
-                    {renderTile(tile.position, tile.state.value, 'tile-move-anim')}
-                    {renderTile(tile.position, tile.value, '')}
-                </div>
-            )
-        } else if (tile.state.type === 'moved') {
-            return renderTile(tile.position, tile.value, 'tile-move-anim', String(index))
-        } else {
-            return renderTile(tile.position, tile.value, '', String(index))
+        switch (tile.state.type) {
+            case 'merged':
+                return (
+                    <div key={String(index)} style={{ display: 'contents' }}>
+                        {renderTile({
+                            from: tile.state.from1,
+                            to: tile.position,
+                            value: tile.state.value,
+                            animClass: 'tile-move-anim',
+                        })}
+                        {renderTile({
+                            from: tile.state.from2,
+                            to: tile.position,
+                            value: tile.state.value,
+                            animClass: 'tile-move-anim',
+                        })}
+                        {renderTile({
+                            from: tile.position,
+                            to: tile.position,
+                            value: tile.value,
+                            animClass: '',
+                        })}
+                    </div>
+                )
+            case 'moved':
+                return renderTile({
+                    from: tile.state.from,
+                    to: tile.position,
+                    value: tile.value,
+                    animClass: 'tile-move-anim',
+                    key: String(index),
+                })
+            case 'static':
+                return renderTile({
+                    from: tile.position,
+                    to: tile.position,
+                    value: tile.value,
+                    animClass: '',
+                    key: String(index),
+                })
         }
     })
 }
