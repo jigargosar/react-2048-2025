@@ -339,19 +339,19 @@ function renderMergedTile(tile: Tile, state: MergedState, index: number) {
                 from: state.from1,
                 to: tile.position,
                 value: state.value,
-                animClass: 'tile-move-anim',
+                animClass: 'tile-merge-source-anim',
             })}
             {renderTile({
                 from: state.from2,
                 to: tile.position,
                 value: state.value,
-                animClass: 'tile-move-anim',
+                animClass: 'tile-merge-source-anim',
             })}
             {renderTile({
                 from: tile.position,
                 to: tile.position,
                 value: tile.value,
-                animClass: '',
+                animClass: 'tile-merge-result-anim',
             })}
         </div>
     )

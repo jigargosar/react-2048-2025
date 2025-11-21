@@ -17,3 +17,33 @@
         transform: translate(0, 0);
     }
 }
+
+.tile-merge-source-anim {
+    animation: tile-merge-source 150ms ease-in-out forwards;
+}
+
+@keyframes tile-merge-source {
+    from {
+        transform: translate(var(--offset-x), var(--offset-y)) scale(1);
+    }
+    to {
+        transform: translate(0, 0) scale(0);
+    }
+}
+
+.tile-merge-result-anim {
+    animation: tile-merge-result 150ms ease-in-out 150ms forwards;
+    transform: scale(0);
+}
+
+@keyframes tile-merge-result {
+    0% {
+        transform: scale(0);
+    }
+    70% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
