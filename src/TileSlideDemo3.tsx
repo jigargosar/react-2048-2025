@@ -323,32 +323,17 @@ function renderTile({ from, to, value, animClass, key }: TileRenderProps) {
     )
 }
 
-function matchTile<R>(
-    tile: Tile,
-    handlers: {
-        merged: (tile: MergedTile) => R
-        moved: (tile: MovedTile) => R
-        static: (tile: StaticTile) => R
-    },
-): R {
-    switch (tile.state.type) {
-        case 'merged':
-            return handlers.merged({ ...tile, state: tile.state })
-        case 'moved':
-            return handlers.moved({ ...tile, state: tile.state })
-        case 'static':
-            return handlers.static({ ...tile, state: tile.state })
-    }
-}
-
 function renderTiles(tiles: Tile[]) {
-    return tiles.map((tile, index) =>
-        matchTile(tile, {
-            merged: (t) => renderMergedTile(t, index),
-            moved: (t) => renderMovedTile(t, index),
-            static: (t) => renderStaticTile(t, index),
-        }),
-    )
+    return tiles.map((tile, index) => {
+        switch (tile.state.type) {
+            case 'merged':
+                return renderMergedTile({ ...tile, state: tile.state }, index)
+            case 'moved':
+                return renderMovedTile({ ...tile, state: tile.state }, index)
+            case 'static':
+                return renderStaticTile({ ...tile, state: tile.state }, index)
+        }
+    })
 }
 
 function renderMergedTile(tile: MergedTile, index: number) {
