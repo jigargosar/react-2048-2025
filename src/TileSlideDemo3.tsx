@@ -267,10 +267,16 @@ function getTileTextColor(value: number): string {
     return value <= 4 ? '#776e65' : '#f9f6f2'
 }
 
-function renderTile(position: Position, value: number, key?: string) {
+function renderTile(
+    position: Position,
+    value: number,
+    className: string,
+    key?: string,
+) {
     return (
         <div
             key={key}
+            className={className}
             style={{
                 gridColumn: position.col + 1,
                 gridRow: position.row + 1,
@@ -305,13 +311,15 @@ function renderTiles(tiles: Tile[]) {
         if (tile.state.type === 'merged') {
             return (
                 <div key={String(index)} style={{ display: 'contents' }}>
-                    {renderTile(tile.position, tile.state.value)}
-                    {renderTile(tile.position, tile.state.value)}
-                    {renderTile(tile.position, tile.value)}
+                    {renderTile(tile.position, tile.state.value, 'tile-move-anim')}
+                    {renderTile(tile.position, tile.state.value, 'tile-move-anim')}
+                    {renderTile(tile.position, tile.value, '')}
                 </div>
             )
+        } else if (tile.state.type === 'moved') {
+            return renderTile(tile.position, tile.value, 'tile-move-anim', String(index))
         } else {
-            return renderTile(tile.position, tile.value, String(index))
+            return renderTile(tile.position, tile.value, '', String(index))
         }
     })
 }
