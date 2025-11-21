@@ -12,10 +12,6 @@ type MergedState = { type: 'merged'; from1: Position; from2: Position; value: nu
 type TileState = StaticState | MovedState | MergedState
 
 type Tile = { value: number; position: Position; state: TileState }
-type MergedTile = Tile & { state: MergedState }
-type MovedTile = Tile & { state: MovedState }
-type StaticTile = Tile & { state: StaticState }
-
 type MaybeTile = Tile | null
 type Direction = 'left' | 'right' | 'up' | 'down'
 type TileRow = readonly MaybeTile[]
@@ -327,28 +323,28 @@ function renderTiles(tiles: Tile[]) {
     return tiles.map((tile, index) => {
         switch (tile.state.type) {
             case 'merged':
-                return renderMergedTile({ ...tile, state: tile.state }, index)
+                return renderMergedTile(tile, tile.state, index)
             case 'moved':
-                return renderMovedTile({ ...tile, state: tile.state }, index)
+                return renderMovedTile(tile, tile.state, index)
             case 'static':
-                return renderStaticTile({ ...tile, state: tile.state }, index)
+                return renderStaticTile(tile, tile.state, index)
         }
     })
 }
 
-function renderMergedTile(tile: MergedTile, index: number) {
+function renderMergedTile(tile: Tile, state: MergedState, index: number) {
     return (
         <div key={String(index)} style={{ display: 'contents' }}>
             {renderTile({
-                from: tile.state.from1,
+                from: state.from1,
                 to: tile.position,
-                value: tile.state.value,
+                value: state.value,
                 animClass: 'tile-move-anim',
             })}
             {renderTile({
-                from: tile.state.from2,
+                from: state.from2,
                 to: tile.position,
-                value: tile.state.value,
+                value: state.value,
                 animClass: 'tile-move-anim',
             })}
             {renderTile({
@@ -361,9 +357,9 @@ function renderMergedTile(tile: MergedTile, index: number) {
     )
 }
 
-function renderMovedTile(tile: MovedTile, index: number) {
+function renderMovedTile(tile: Tile, state: MovedState, index: number) {
     return renderTile({
-        from: tile.state.from,
+        from: state.from,
         to: tile.position,
         value: tile.value,
         animClass: 'tile-move-anim',
@@ -371,7 +367,7 @@ function renderMovedTile(tile: MovedTile, index: number) {
     })
 }
 
-function renderStaticTile(tile: StaticTile, index: number) {
+function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
     return renderTile({
         from: tile.position,
         to: tile.position,
