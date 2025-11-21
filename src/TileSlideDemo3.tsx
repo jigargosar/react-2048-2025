@@ -17,6 +17,9 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 type TileRow = readonly MaybeTile[]
 type TileMatrix = Matrix<MaybeTile>
 
+const TILES_TO_SPAWN = 1
+const GRID_SIZE = 4
+
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
     { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
@@ -25,6 +28,36 @@ const INITIAL_TILES: Tile[] = [
     { value: 8, position: { row: 2, col: 3 }, state: { type: 'static' } },
     { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
 ]
+
+function getEmptyPositions(tiles: Tile[]): Position[] {
+    const occupied = new Set(tiles.map((t) => `${String(t.position.row)},${String(t.position.col)}`))
+    const empty: Position[] = []
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            if (!occupied.has(`${String(row)},${String(col)}`)) {
+                empty.push({ row, col })
+            }
+        }
+    }
+    return empty
+}
+
+function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
+    let emptyPositions = getEmptyPositions(tiles)
+    const newTiles = [...tiles]
+
+    for (let i = 0; i < count && emptyPositions.length > 0; i++) {
+        const randomIndex = Math.floor(Math.random() * emptyPositions.length)
+        const position = emptyPositions[randomIndex]
+        if (position) {
+            const value = Math.random() < 0.9 ? 2 : 4
+            newTiles.push({ value, position, state: { type: 'static' } })
+            emptyPositions = emptyPositions.filter((_, idx) => idx !== randomIndex)
+        }
+    }
+
+    return newTiles
+}
 
 // Convert tiles array to 4x4 matrix
 function tilesToMatrix(tiles: Tile[]): TileMatrix {
@@ -196,7 +229,8 @@ function useTileSlide() {
                 setRenderCounter(inc)
                 requestAnimationFrame(() => {
                     setTiles((prevTiles) => {
-                        return slideAndMergeTiles(prevTiles, direction)
+                        const movedTiles = slideAndMergeTiles(prevTiles, direction)
+                        return spawnRandomTiles(movedTiles, TILES_TO_SPAWN)
                     })
                 })
             }
