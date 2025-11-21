@@ -6,11 +6,16 @@ import { keepNonNil, type Matrix, reverseRows, transpose } from './utils.ts'
 
 // Types
 type Position = { row: number; col: number }
-type TileState =
-    | { type: 'static' }
-    | { type: 'moved'; from: Position }
-    | { type: 'merged'; from1: Position; from2: Position; value: number }
+type StaticState = { type: 'static' }
+type MovedState = { type: 'moved'; from: Position }
+type MergedState = { type: 'merged'; from1: Position; from2: Position; value: number }
+type TileState = StaticState | MovedState | MergedState
+
 type Tile = { value: number; position: Position; state: TileState }
+type MergedTile = Tile & { state: MergedState }
+type MovedTile = Tile & { state: MovedState }
+type StaticTile = Tile & { state: StaticState }
+
 type MaybeTile = Tile | null
 type Direction = 'left' | 'right' | 'up' | 'down'
 type TileRow = readonly MaybeTile[]
@@ -318,48 +323,75 @@ function renderTile({ from, to, value, animClass, key }: TileRenderProps) {
     )
 }
 
+function matchTile<R>(
+    tile: Tile,
+    handlers: {
+        merged: (tile: MergedTile) => R
+        moved: (tile: MovedTile) => R
+        static: (tile: StaticTile) => R
+    },
+): R {
+    switch (tile.state.type) {
+        case 'merged':
+            return handlers.merged({ ...tile, state: tile.state })
+        case 'moved':
+            return handlers.moved({ ...tile, state: tile.state })
+        case 'static':
+            return handlers.static({ ...tile, state: tile.state })
+    }
+}
+
 function renderTiles(tiles: Tile[]) {
-    return tiles.map((tile, index) => {
-        switch (tile.state.type) {
-            case 'merged':
-                return (
-                    <div key={String(index)} style={{ display: 'contents' }}>
-                        {renderTile({
-                            from: tile.state.from1,
-                            to: tile.position,
-                            value: tile.state.value,
-                            animClass: 'tile-move-anim',
-                        })}
-                        {renderTile({
-                            from: tile.state.from2,
-                            to: tile.position,
-                            value: tile.state.value,
-                            animClass: 'tile-move-anim',
-                        })}
-                        {renderTile({
-                            from: tile.position,
-                            to: tile.position,
-                            value: tile.value,
-                            animClass: '',
-                        })}
-                    </div>
-                )
-            case 'moved':
-                return renderTile({
-                    from: tile.state.from,
-                    to: tile.position,
-                    value: tile.value,
-                    animClass: 'tile-move-anim',
-                    key: String(index),
-                })
-            case 'static':
-                return renderTile({
-                    from: tile.position,
-                    to: tile.position,
-                    value: tile.value,
-                    animClass: '',
-                    key: String(index),
-                })
-        }
+    return tiles.map((tile, index) =>
+        matchTile(tile, {
+            merged: (t) => renderMergedTile(t, index),
+            moved: (t) => renderMovedTile(t, index),
+            static: (t) => renderStaticTile(t, index),
+        }),
+    )
+}
+
+function renderMergedTile(tile: MergedTile, index: number) {
+    return (
+        <div key={String(index)} style={{ display: 'contents' }}>
+            {renderTile({
+                from: tile.state.from1,
+                to: tile.position,
+                value: tile.state.value,
+                animClass: 'tile-move-anim',
+            })}
+            {renderTile({
+                from: tile.state.from2,
+                to: tile.position,
+                value: tile.state.value,
+                animClass: 'tile-move-anim',
+            })}
+            {renderTile({
+                from: tile.position,
+                to: tile.position,
+                value: tile.value,
+                animClass: '',
+            })}
+        </div>
+    )
+}
+
+function renderMovedTile(tile: MovedTile, index: number) {
+    return renderTile({
+        from: tile.state.from,
+        to: tile.position,
+        value: tile.value,
+        animClass: 'tile-move-anim',
+        key: String(index),
+    })
+}
+
+function renderStaticTile(tile: StaticTile, index: number) {
+    return renderTile({
+        from: tile.position,
+        to: tile.position,
+        value: tile.value,
+        animClass: '',
+        key: String(index),
     })
 }
