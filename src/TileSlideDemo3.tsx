@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useEffect, useState } from 'react'
 import { pipe } from 'fp-ts/function'
-import { flatten, inc } from 'ramda'
+import { flatten, inc, repeat, times } from 'ramda'
 import {
     createSeededRandom,
     keepNonNil,
@@ -29,22 +29,24 @@ type Tile = Readonly<{
     state: TileState
 }>
 type MaybeTile = Tile | null
+type Tiles = readonly Tile[]
+type Positions = readonly Position[]
 type Direction = 'left' | 'right' | 'up' | 'down'
-type RowMaybeTile = readonly MaybeTile[]
+type MaybeTiles = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
 
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 4
 const random = createSeededRandom(1)
 
-const POSITION_MATRIX: Matrix<Position> = Array.from(
-    { length: GRID_SIZE },
-    (_, row) => Array.from({ length: GRID_SIZE }, (_, col) => ({ row, col })),
+const POSITION_MATRIX: Matrix<Position> = times(
+    (row) => times((col) => ({ row, col }), GRID_SIZE),
+    GRID_SIZE,
 )
-const ALL_POSITIONS: Position[] = POSITION_MATRIX.flat()
+const ALL_POSITIONS: Positions = POSITION_MATRIX.flat()
 
 // Hardcoded initial tiles
-const INITIAL_TILES: Tile[] = [
+const INITIAL_TILES: Tiles = [
     { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
     { value: 4, position: { row: 0, col: 2 }, state: { type: 'static' } },
     { value: 2, position: { row: 1, col: 1 }, state: { type: 'static' } },
@@ -52,7 +54,7 @@ const INITIAL_TILES: Tile[] = [
     { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
 ]
 
-function getEmptyPositions(tiles: Tile[]): Position[] {
+function getEmptyPositions(tiles: Tiles): Positions {
     const matrix = tilesToMatrix(tiles)
     return ALL_POSITIONS.filter((p) => matrix[p.row]?.[p.col] === null)
 }
@@ -61,7 +63,7 @@ function createSpawnedTile(position: Position, value: number): Tile {
     return { value, position, state: { type: 'spawned' } }
 }
 
-function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
+function spawnRandomTiles(tiles: Tiles, count: number): Tiles {
     let emptyPositions = getEmptyPositions(tiles)
     const newTiles = [...tiles]
 
@@ -81,10 +83,8 @@ function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
 }
 
 // Convert tiles array to 4x4 matrix
-function tilesToMatrix(tiles: Tile[]): MatrixMaybeTile {
-    const matrix: MaybeTile[][] = Array.from({ length: 4 }, () =>
-        Array<MaybeTile>(4).fill(null),
-    )
+function tilesToMatrix(tiles: Tiles): MatrixMaybeTile {
+    const matrix: MaybeTile[][] = times(() => repeat(null, GRID_SIZE), GRID_SIZE)
     for (const tile of tiles) {
         const row = matrix[tile.position.row]
         if (row) {
@@ -133,7 +133,7 @@ function setPositionsFromMatrix(matrix: MatrixMaybeTile): MatrixMaybeTile {
 }
 
 // Slide and merge a single row of tiles left
-function slideAndMergeRowLeft(row: RowMaybeTile): RowMaybeTile {
+function slideAndMergeRowLeft(row: MaybeTiles): MaybeTiles {
     // Filter non-null tiles and keep their original indices
     const nonNullTiles: Array<{ tile: Tile; originalIndex: number }> = []
     for (let i = 0; i < row.length; i++) {
@@ -144,7 +144,7 @@ function slideAndMergeRowLeft(row: RowMaybeTile): RowMaybeTile {
     }
 
     // Build result array with merging logic
-    const result: MaybeTile[] = [null, null, null, null]
+    const result: MaybeTile[] = repeat(null, GRID_SIZE)
     let writePos = 0
 
     for (const { tile, originalIndex } of nonNullTiles) {
@@ -201,7 +201,7 @@ function slideAndMergeMatrix(
 }
 
 // Process tiles for sliding in a direction
-function slideAndMergeTiles(tiles: Tile[], direction: Direction): Tile[] {
+function slideAndMergeTiles(tiles: Tiles, direction: Direction): Tiles {
     return pipe(
         tiles,
         tilesToMatrix,
@@ -227,16 +227,17 @@ function parseDirectionFromKey(key: string): Direction | null {
     }
 }
 
-function move(tiles: Tile[], direction: Direction): Tile[] {
+function move(tiles: Tiles, direction: Direction): Tiles {
     const movedTiles = slideAndMergeTiles(tiles, direction)
-    const hasMoved = movedTiles.some((t) => t.state.type !== 'static')
-    return hasMoved ? spawnRandomTiles(movedTiles, TILES_TO_SPAWN) : movedTiles
+    const allStatic = movedTiles.every((t) => t.state.type === 'static')
+    if (allStatic) return tiles
+    return spawnRandomTiles(movedTiles, TILES_TO_SPAWN)
 }
 
 // VIEW
 
 function useTileSlide() {
-    const [tiles, setTiles] = useState<Tile[]>(INITIAL_TILES)
+    const [tiles, setTiles] = useState<Tiles>(INITIAL_TILES)
     const [renderCounter, setRenderCounter] = useState(0)
 
     useEffect(() => {
@@ -400,7 +401,7 @@ function renderTile({
     )
 }
 
-function renderTiles(tiles: Tile[]) {
+function renderTiles(tiles: Tiles) {
     return tiles.map((tile, index) => {
         switch (tile.state.type) {
             case 'merged':
