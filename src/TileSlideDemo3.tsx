@@ -367,7 +367,7 @@ function renderTile({
                     fontSize: value >= 1000 ? '35px' : '55px',
                     fontWeight: 'bold',
                     position: 'relative',
-                    border: debug ? `3px solid ${debug.bgColor}` : undefined,
+                    outline: debug ? `1px solid ${debug.bgColor}` : undefined,
                 }}
             >
                 {value}
@@ -375,13 +375,13 @@ function renderTile({
                     <span
                         style={{
                             position: 'absolute',
-                            top: '4px',
-                            right: '4px',
+                            top: '0',
+                            right: '0',
                             fontSize: '9px',
                             color: '#fff',
                             backgroundColor: debug.bgColor,
                             padding: '1px 4px',
-                            borderRadius: '3px',
+                            borderRadius: '0 4px 0 4px',
                             fontWeight: 'normal',
                         }}
                     >
@@ -416,21 +416,21 @@ function renderMergedTile(tile: Tile, state: MergedState, index: number) {
                 to: tile.position,
                 value: state.value,
                 animClass: 'tile-merge-source-anim',
-                debug: { label: 'merged', bgColor: '#FF9800' },
+                debug: { label: 'merged', bgColor: '#C2185B' },
             })}
             {renderTile({
                 from: state.from2,
                 to: tile.position,
                 value: state.value,
                 animClass: 'tile-merge-source-anim',
-                debug: { label: 'merged', bgColor: '#FF9800' },
+                debug: { label: 'merged', bgColor: '#C2185B' },
             })}
             {renderTile({
                 from: tile.position,
                 to: tile.position,
                 value: tile.value,
                 animClass: 'tile-merge-result-anim',
-                debug: { label: 'merged', bgColor: '#FF9800' },
+                debug: { label: 'merged', bgColor: '#C2185B' },
             })}
         </div>
     )
@@ -442,7 +442,7 @@ function renderMovedTile(tile: Tile, state: MovedState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: 'tile-move-anim',
-        debug: { label: 'moved', bgColor: '#4CAF50' },
+        debug: { label: 'moved', bgColor: '#00897B' },
         key: String(index),
     })
 }
@@ -453,7 +453,7 @@ function renderSpawnedTile(tile: Tile, _state: SpawnedState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: 'tile-spawn-anim',
-        debug: { label: 'spawned', bgColor: '#2196F3' },
+        debug: { label: 'spawned', bgColor: '#7B1FA2' },
         key: String(index),
     })
 }
@@ -464,7 +464,7 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: '',
-        debug: { label: 'static', bgColor: '#888888' },
+        debug: { label: 'static', bgColor: '#546E7A' },
         key: String(index),
     })
 }
