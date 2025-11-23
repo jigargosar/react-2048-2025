@@ -35,10 +35,10 @@ Animation Timeline:
 
 @keyframes tile-merge-source {
     from {
-        transform: translate(var(--offset-x), var(--offset-y)) scale(1);
+        transform: translate(var(--offset-x), var(--offset-y));
     }
     to {
-        transform: translate(0, 0) scale(0);
+        transform: translate(0, 0);
     }
 }
 
