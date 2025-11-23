@@ -11,33 +11,37 @@ import {
 } from './utils.ts'
 
 // Types
-type Position = { row: number; col: number }
-type StaticState = { type: 'static' }
-type MovedState = { type: 'moved'; from: Position }
+type Position = { readonly row: number; readonly col: number }
+type StaticState = { readonly type: 'static' }
+type MovedState = { readonly type: 'moved'; readonly from: Position }
+type SpawnedState = { readonly type: 'spawned' }
 type MergedState = {
     type: 'merged'
     from1: Position
     from2: Position
     value: number
 }
-type SpawnedState = { type: 'spawned' }
 type TileState = StaticState | MovedState | MergedState | SpawnedState
 
-type Tile = { value: number; position: Position; state: TileState }
+type Tile = {
+    position: Position
+    value: number
+    state: TileState
+}
 type MaybeTile = Tile | null
 type Direction = 'left' | 'right' | 'up' | 'down'
 type TileRow = readonly MaybeTile[]
-type TileMatrix = Matrix<MaybeTile>
+type MatrixMaybeTile = Matrix<MaybeTile>
 
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 4
 const random = createSeededRandom(1)
 
-const POSITION_GRID: Position[][] = Array.from(
+const POSITION_MATRIX: Matrix<Position> = Array.from(
     { length: GRID_SIZE },
     (_, row) => Array.from({ length: GRID_SIZE }, (_, col) => ({ row, col })),
 )
-const ALL_POSITIONS: Position[] = POSITION_GRID.flat()
+const ALL_POSITIONS: Position[] = POSITION_MATRIX.flat()
 
 // Hardcoded initial tiles
 const INITIAL_TILES: Tile[] = [
@@ -53,6 +57,10 @@ function getEmptyPositions(tiles: Tile[]): Position[] {
     return ALL_POSITIONS.filter((p) => matrix[p.row]?.[p.col] === null)
 }
 
+function createSpawnedTile(position: Position, value: number): Tile {
+    return { value, position, state: { type: 'spawned' } }
+}
+
 function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
     let emptyPositions = getEmptyPositions(tiles)
     const newTiles = [...tiles]
@@ -62,7 +70,7 @@ function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
         const position = emptyPositions[randomIndex]
         if (position) {
             const value = random() < 0.9 ? 2 : 4
-            newTiles.push({ value, position, state: { type: 'spawned' } })
+            newTiles.push(createSpawnedTile(position, value))
             emptyPositions = emptyPositions.filter(
                 (_, idx) => idx !== randomIndex,
             )
@@ -73,7 +81,7 @@ function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
 }
 
 // Convert tiles array to 4x4 matrix
-function tilesToMatrix(tiles: Tile[]): TileMatrix {
+function tilesToMatrix(tiles: Tile[]): MatrixMaybeTile {
     const matrix: MaybeTile[][] = Array.from({ length: 4 }, () =>
         Array<MaybeTile>(4).fill(null),
     )
@@ -112,7 +120,7 @@ function createMergedTile(tile1: Tile, tile2: Tile): Tile {
 }
 
 // Update tile positions based on their location in the matrix
-function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
+function setPositionsFromMatrix(matrix: MatrixMaybeTile): MatrixMaybeTile {
     return matrix.map((row, rowIndex) =>
         row.map((tile, colIndex) => {
             if (tile === null) return null
@@ -142,17 +150,16 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
     for (const { tile, originalIndex } of nonNullTiles) {
         const prevTile = writePos > 0 ? result[writePos - 1] : undefined
 
-        // Check if we can merge with previous tile
-        if (
-            prevTile != null &&
+        const canMerge =
+            prevTile &&
             prevTile.state.type !== 'merged' &&
             prevTile.value === tile.value
-        ) {
+
+        if (canMerge) {
             // Merge: replace previous tile with merged version
             result[writePos - 1] = createMergedTile(prevTile, tile)
         } else {
             // No merge: determine state and write tile
-
             result[writePos] =
                 writePos === originalIndex
                     ? setTileStateToStatic(tile)
@@ -165,15 +172,15 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
 }
 
 // Slide tiles left in matrix
-function slideLeft(matrix: TileMatrix): TileMatrix {
+function slideLeft(matrix: MatrixMaybeTile): MatrixMaybeTile {
     return matrix.map(slideAndMergeRowLeft)
 }
 
 // Slide tiles in the specified direction
 function slideAndMergeMatrix(
-    matrix: TileMatrix,
+    matrix: MatrixMaybeTile,
     direction: Direction,
-): TileMatrix {
+): MatrixMaybeTile {
     switch (direction) {
         case 'left':
             return slideLeft(matrix)
