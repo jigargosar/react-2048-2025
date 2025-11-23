@@ -316,15 +316,28 @@ type TileStyle = React.CSSProperties & {
     '--offset-y': string
 }
 
+type DebugInfo = {
+    label: string
+    bgColor: string
+}
+
 type TileRenderProps = {
     from: Position
     to: Position
     value: number
     animClass: string
+    debug?: DebugInfo
     key?: string
 }
 
-function renderTile({ from, to, value, animClass, key }: TileRenderProps) {
+function renderTile({
+    from,
+    to,
+    value,
+    animClass,
+    debug,
+    key,
+}: TileRenderProps) {
     const offsetX = (from.col - to.col) * 100
     const offsetY = (from.row - to.row) * 100
 
@@ -353,9 +366,28 @@ function renderTile({ from, to, value, animClass, key }: TileRenderProps) {
                     justifyContent: 'center',
                     fontSize: value >= 1000 ? '35px' : '55px',
                     fontWeight: 'bold',
+                    position: 'relative',
+                    border: debug ? `3px solid ${debug.bgColor}` : undefined,
                 }}
             >
                 {value}
+                {debug && (
+                    <span
+                        style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '4px',
+                            fontSize: '9px',
+                            color: '#fff',
+                            backgroundColor: debug.bgColor,
+                            padding: '1px 4px',
+                            borderRadius: '3px',
+                            fontWeight: 'normal',
+                        }}
+                    >
+                        {debug.label}
+                    </span>
+                )}
             </div>
         </div>
     )
@@ -384,18 +416,21 @@ function renderMergedTile(tile: Tile, state: MergedState, index: number) {
                 to: tile.position,
                 value: state.value,
                 animClass: 'tile-merge-source-anim',
+                debug: { label: 'merged', bgColor: '#FF9800' },
             })}
             {renderTile({
                 from: state.from2,
                 to: tile.position,
                 value: state.value,
                 animClass: 'tile-merge-source-anim',
+                debug: { label: 'merged', bgColor: '#FF9800' },
             })}
             {renderTile({
                 from: tile.position,
                 to: tile.position,
                 value: tile.value,
                 animClass: 'tile-merge-result-anim',
+                debug: { label: 'merged', bgColor: '#FF9800' },
             })}
         </div>
     )
@@ -407,6 +442,7 @@ function renderMovedTile(tile: Tile, state: MovedState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: 'tile-move-anim',
+        debug: { label: 'moved', bgColor: '#4CAF50' },
         key: String(index),
     })
 }
@@ -417,6 +453,7 @@ function renderSpawnedTile(tile: Tile, _state: SpawnedState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: 'tile-spawn-anim',
+        debug: { label: 'spawned', bgColor: '#2196F3' },
         key: String(index),
     })
 }
@@ -427,6 +464,7 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: '',
+        debug: { label: 'static', bgColor: '#888888' },
         key: String(index),
     })
 }
