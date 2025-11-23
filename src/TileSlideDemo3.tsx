@@ -9,7 +9,8 @@ type Position = { row: number; col: number }
 type StaticState = { type: 'static' }
 type MovedState = { type: 'moved'; from: Position }
 type MergedState = { type: 'merged'; from1: Position; from2: Position; value: number }
-type TileState = StaticState | MovedState | MergedState
+type SpawnedState = { type: 'spawned' }
+type TileState = StaticState | MovedState | MergedState | SpawnedState
 
 type Tile = { value: number; position: Position; state: TileState }
 type MaybeTile = Tile | null
@@ -48,7 +49,7 @@ function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
         const position = emptyPositions[randomIndex]
         if (position) {
             const value = Math.random() < 0.9 ? 2 : 4
-            newTiles.push({ value, position, state: { type: 'static' } })
+            newTiles.push({ value, position, state: { type: 'spawned' } })
             emptyPositions = emptyPositions.filter((_, idx) => idx !== randomIndex)
         }
     }
@@ -360,6 +361,8 @@ function renderTiles(tiles: Tile[]) {
                 return renderMergedTile(tile, tile.state, index)
             case 'moved':
                 return renderMovedTile(tile, tile.state, index)
+            case 'spawned':
+                return renderSpawnedTile(tile, tile.state, index)
             case 'static':
                 return renderStaticTile(tile, tile.state, index)
         }
@@ -397,6 +400,16 @@ function renderMovedTile(tile: Tile, state: MovedState, index: number) {
         to: tile.position,
         value: tile.value,
         animClass: 'tile-move-anim',
+        key: String(index),
+    })
+}
+
+function renderSpawnedTile(tile: Tile, _state: SpawnedState, index: number) {
+    return renderTile({
+        from: tile.position,
+        to: tile.position,
+        value: tile.value,
+        animClass: 'tile-spawn-anim',
         key: String(index),
     })
 }

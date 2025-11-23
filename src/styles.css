@@ -47,3 +47,16 @@
         transform: scale(1);
     }
 }
+
+.tile-spawn-anim {
+    animation: tile-spawn 150ms ease-in-out 300ms both;
+}
+
+@keyframes tile-spawn {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
