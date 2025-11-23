@@ -5,6 +5,17 @@
     --offset-y: 0;
 }
 
+/*
+Animation Timeline:
+
+0ms                 150ms               300ms               450ms
+|                   |                   |                   |
+|===== Slide =======|                   |                   |
+|== Merge Source ===|                   |                   |
+|                   |== Merge Result ===|                   |
+|                   |                   |===== Spawn =======|
+*/
+
 .tile-move-anim {
     animation: slide-tile 150ms ease-in-out;
 }

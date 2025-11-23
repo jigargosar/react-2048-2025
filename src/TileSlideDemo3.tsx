@@ -2,7 +2,13 @@ import type React from 'react'
 import { useEffect, useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import { flatten, inc } from 'ramda'
-import { keepNonNil, type Matrix, reverseRows, transpose } from './utils.ts'
+import {
+    createSeededRandom,
+    keepNonNil,
+    type Matrix,
+    reverseRows,
+    transpose,
+} from './utils.ts'
 
 // Types
 type Position = { row: number; col: number }
@@ -20,6 +26,7 @@ type TileMatrix = Matrix<MaybeTile>
 
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 4
+const random = createSeededRandom(1)
 
 const POSITION_GRID: Position[][] = Array.from({ length: GRID_SIZE }, (_, row) =>
     Array.from({ length: GRID_SIZE }, (_, col) => ({ row, col })),
@@ -45,10 +52,10 @@ function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
     const newTiles = [...tiles]
 
     for (let i = 0; i < count && emptyPositions.length > 0; i++) {
-        const randomIndex = Math.floor(Math.random() * emptyPositions.length)
+        const randomIndex = Math.floor(random() * emptyPositions.length)
         const position = emptyPositions[randomIndex]
         if (position) {
-            const value = Math.random() < 0.9 ? 2 : 4
+            const value = random() < 0.9 ? 2 : 4
             newTiles.push({ value, position, state: { type: 'spawned' } })
             emptyPositions = emptyPositions.filter((_, idx) => idx !== randomIndex)
         }
