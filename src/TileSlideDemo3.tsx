@@ -36,7 +36,8 @@ type MaybeTiles = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
 
 const TILES_TO_SPAWN = 1
-const GRID_SIZE = 4
+const GRID_SIZE = 5
+const TILE_SIZE = 100
 const random = createSeededRandom(1)
 
 const POSITION_MATRIX: Matrix<Position> = times(
@@ -287,8 +288,8 @@ export function TileSlideDemo3() {
                     gap: '0',
                     background: '#2d2d2d',
                     borderRadius: '8px',
-                    width: '400px',
-                    height: '400px',
+                    width: `${String(TILE_SIZE * GRID_SIZE)}px`,
+                    aspectRatio: '1/1',
                 }}
             >
                 {renderTiles(tiles)}
