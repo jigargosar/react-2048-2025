@@ -43,13 +43,13 @@ Animation Timeline:
 }
 
 .tile-merge-result-anim {
-    animation: tile-merge-result 150ms ease-in-out 150ms forwards;
-    opacity: 0;
+    animation: tile-merge-result 150ms ease-in-out 150ms both;
 }
 
 @keyframes tile-merge-result {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    0% { opacity: 0; }
+    50% { opacity: 1; transform: scale(1.15); }
+    100% { transform: scale(1); }
 }
 
 .tile-spawn-anim {
