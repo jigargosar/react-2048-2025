@@ -148,7 +148,7 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
     let writePos = 0
 
     for (const { tile, originalIndex } of nonNullTiles) {
-        const prevTile = writePos > 0 ? result[writePos - 1] : undefined
+        const prevTile = result[writePos - 1]
 
         const canMerge =
             prevTile &&
