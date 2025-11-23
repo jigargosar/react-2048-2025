@@ -367,7 +367,7 @@ function renderTile({
                     fontSize: value >= 1000 ? '35px' : '55px',
                     fontWeight: 'bold',
                     position: 'relative',
-                    outline: debug ? `1px solid ${debug.bgColor}` : undefined,
+                    outline: debug ? `1.5px solid ${debug.bgColor}` : undefined,
                 }}
             >
                 {value}
