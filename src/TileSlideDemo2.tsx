@@ -208,7 +208,7 @@ function useTileSlide() {
             requestAnimationFrame(() => {
                 setTiles((tiles) =>
                     tiles.map((tile) => {
-                        if (tile.mergeState.type === 'normal') {WW
+                        if (tile.mergeState.type === 'normal') {
                             return {
                                 ...tile,
                                 visualRow: tile.row,
