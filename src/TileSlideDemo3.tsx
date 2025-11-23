@@ -82,7 +82,6 @@ function spawnRandomTiles(tiles: Tiles, count: number): Tiles {
     return newTiles
 }
 
-// Convert tiles array to 4x4 matrix
 function tilesToMatrix(tiles: Tiles): MatrixMaybeTile {
     const matrix: MaybeTile[][] = times(() => repeat(null, GRID_SIZE), GRID_SIZE)
     for (const tile of tiles) {
@@ -283,8 +282,8 @@ export function TileSlideDemo3() {
                 key={renderCounter}
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
-                    gridTemplateRows: 'repeat(4, 1fr)',
+                    gridTemplateColumns: `repeat(${String(GRID_SIZE)}, 1fr)`,
+                    gridTemplateRows: `repeat(${String(GRID_SIZE)}, 1fr)`,
                     gap: '0',
                     background: '#2d2d2d',
                     borderRadius: '8px',
