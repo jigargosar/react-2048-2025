@@ -11,23 +11,23 @@ import {
 } from './utils.ts'
 
 // Types
-type Position = { readonly row: number; readonly col: number }
-type StaticState = { readonly type: 'static' }
-type MovedState = { readonly type: 'moved'; readonly from: Position }
-type SpawnedState = { readonly type: 'spawned' }
-type MergedState = {
+type Position = Readonly<{ row: number; col: number }>
+type StaticState = Readonly<{ type: 'static' }>
+type MovedState = Readonly<{ type: 'moved'; from: Position }>
+type SpawnedState = Readonly<{ type: 'spawned' }>
+type MergedState = Readonly<{
     type: 'merged'
     from1: Position
     from2: Position
     value: number
-}
+}>
 type TileState = StaticState | MovedState | MergedState | SpawnedState
 
-type Tile = {
+type Tile = Readonly<{
     position: Position
     value: number
     state: TileState
-}
+}>
 type MaybeTile = Tile | null
 type Direction = 'left' | 'right' | 'up' | 'down'
 type TileRow = readonly MaybeTile[]
