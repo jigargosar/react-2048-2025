@@ -30,7 +30,7 @@ type Tile = Readonly<{
 }>
 type MaybeTile = Tile | null
 type Direction = 'left' | 'right' | 'up' | 'down'
-type TileRow = readonly MaybeTile[]
+type RowMaybeTile = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
 
 const TILES_TO_SPAWN = 1
@@ -133,7 +133,7 @@ function setPositionsFromMatrix(matrix: MatrixMaybeTile): MatrixMaybeTile {
 }
 
 // Slide and merge a single row of tiles left
-function slideAndMergeRowLeft(row: TileRow): TileRow {
+function slideAndMergeRowLeft(row: RowMaybeTile): RowMaybeTile {
     // Filter non-null tiles and keep their original indices
     const nonNullTiles: Array<{ tile: Tile; originalIndex: number }> = []
     for (let i = 0; i < row.length; i++) {
