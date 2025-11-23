@@ -14,7 +14,12 @@ import {
 type Position = { row: number; col: number }
 type StaticState = { type: 'static' }
 type MovedState = { type: 'moved'; from: Position }
-type MergedState = { type: 'merged'; from1: Position; from2: Position; value: number }
+type MergedState = {
+    type: 'merged'
+    from1: Position
+    from2: Position
+    value: number
+}
 type SpawnedState = { type: 'spawned' }
 type TileState = StaticState | MovedState | MergedState | SpawnedState
 
@@ -28,8 +33,9 @@ const TILES_TO_SPAWN = 1
 const GRID_SIZE = 4
 const random = createSeededRandom(1)
 
-const POSITION_GRID: Position[][] = Array.from({ length: GRID_SIZE }, (_, row) =>
-    Array.from({ length: GRID_SIZE }, (_, col) => ({ row, col })),
+const POSITION_GRID: Position[][] = Array.from(
+    { length: GRID_SIZE },
+    (_, row) => Array.from({ length: GRID_SIZE }, (_, col) => ({ row, col })),
 )
 const ALL_POSITIONS: Position[] = POSITION_GRID.flat()
 
@@ -57,7 +63,9 @@ function spawnRandomTiles(tiles: Tile[], count: number): Tile[] {
         if (position) {
             const value = random() < 0.9 ? 2 : 4
             newTiles.push({ value, position, state: { type: 'spawned' } })
-            emptyPositions = emptyPositions.filter((_, idx) => idx !== randomIndex)
+            emptyPositions = emptyPositions.filter(
+                (_, idx) => idx !== randomIndex,
+            )
         }
     }
 
@@ -79,32 +87,11 @@ function tilesToMatrix(tiles: Tile[]): TileMatrix {
     return matrix
 }
 
-// Set all tiles state to static
-function setTilesStateStatic(tiles: Tile[]): Tile[] {
-    return tiles.map((tile) => ({
-        ...tile,
-        state: { type: 'static' },
-    }))
-}
-
-// Update tile positions based on their location in the matrix
-function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
-    return matrix.map((row, rowIndex) =>
-        row.map((tile, colIndex) => {
-            if (tile === null) return null
-            return {
-                ...tile,
-                position: { row: rowIndex, col: colIndex },
-            }
-        }),
-    )
-}
-
-function createStaticTile(tile: Tile): Tile {
+function setTileStateToStatic(tile: Tile): Tile {
     return { ...tile, state: { type: 'static' } }
 }
 
-function createMovedTile(tile: Tile): Tile {
+function setTileStateToMoved(tile: Tile): Tile {
     return {
         ...tile,
         state: { type: 'moved', from: tile.position },
@@ -122,6 +109,19 @@ function createMergedTile(tile1: Tile, tile2: Tile): Tile {
             value: tile1.value,
         },
     }
+}
+
+// Update tile positions based on their location in the matrix
+function setPositionsFromMatrix(matrix: TileMatrix): TileMatrix {
+    return matrix.map((row, rowIndex) =>
+        row.map((tile, colIndex) => {
+            if (tile === null) return null
+            return {
+                ...tile,
+                position: { row: rowIndex, col: colIndex },
+            }
+        }),
+    )
 }
 
 // Slide and merge a single row of tiles left
@@ -155,8 +155,8 @@ function slideAndMergeRowLeft(row: TileRow): TileRow {
 
             result[writePos] =
                 writePos === originalIndex
-                    ? createStaticTile(tile)
-                    : createMovedTile(tile)
+                    ? setTileStateToStatic(tile)
+                    : setTileStateToMoved(tile)
             writePos++
         }
     }
@@ -237,7 +237,7 @@ function useTileSlide() {
             const direction = parseDirectionFromKey(event.key)
             if (!direction) return
 
-            setTiles(setTilesStateStatic)
+            setTiles((prevTiles) => prevTiles.map(setTileStateToStatic))
             setRenderCounter(inc)
             requestAnimationFrame(() => {
                 setTiles((prevTiles) => move(prevTiles, direction))
