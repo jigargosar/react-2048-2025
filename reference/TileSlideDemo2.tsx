@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import * as A from 'fp-ts/Array'
-import { type Matrix, transpose, reverseRows } from './utils'
+import { type Matrix, transpose, reverseRows } from '../src/utils'
 
 type SourceTile = {
     row: number
