@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import { flatten, inc, repeat, times } from 'ramda'
 import {
@@ -35,11 +35,11 @@ type Direction = 'left' | 'right' | 'up' | 'down'
 type MaybeTiles = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
 type ScoreDeltas = readonly number[]
+type Random = () => number
 
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 5
 const TILE_SIZE = 100
-const random = createSeededRandom(1)
 
 const POSITION_MATRIX: Matrix<Position> = times(
     (row) => times((col) => ({ row, col }), GRID_SIZE),
@@ -60,6 +60,7 @@ const INITIAL_STATE = {
     tiles: INITIAL_TILES,
     scoreDeltas: [],
     renderCounter: 0,
+    randomSeed: 1,
 }
 
 function getEmptyPositions(tiles: Tiles): Positions {
@@ -71,7 +72,7 @@ function createSpawnedTile(position: Position, value: number): Tile {
     return { value, position, state: { type: 'spawned' } }
 }
 
-function spawnRandomTiles(tiles: Tiles, count: number): Tiles {
+function spawnRandomTiles(tiles: Tiles, count: number, random: Random): Tiles {
     let emptyPositions = getEmptyPositions(tiles)
     const newTiles = [...tiles]
 
@@ -242,14 +243,14 @@ function computeScoreDelta(tiles: Tiles): number {
 
 type MoveResult = { tiles: Tiles; scoreDelta: number }
 
-function move(tiles: Tiles, direction: Direction): MoveResult {
+function move(tiles: Tiles, direction: Direction, random: Random): MoveResult {
     const movedTiles = slideAndMergeTiles(tiles, direction)
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
     if (allStatic) return { tiles, scoreDelta: 0 }
 
     const scoreDelta = computeScoreDelta(movedTiles)
     return {
-        tiles: spawnRandomTiles(movedTiles, TILES_TO_SPAWN),
+        tiles: spawnRandomTiles(movedTiles, TILES_TO_SPAWN, random),
         scoreDelta,
     }
 }
@@ -260,13 +261,21 @@ function useTileSlide() {
     const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
     const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
     const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>(INITIAL_STATE.scoreDeltas)
+    const randomRef = useRef(createSeededRandom(INITIAL_STATE.randomSeed))
+
+    const resetGame = () => {
+        setTiles(INITIAL_STATE.tiles)
+        setRenderCounter(INITIAL_STATE.renderCounter)
+        setScoreDeltas(INITIAL_STATE.scoreDeltas)
+        randomRef.current = createSeededRandom(INITIAL_STATE.randomSeed)
+    }
 
     const onMove = useEffectEvent((direction: Direction) => {
         const staticTiles = tiles.map(setTileStateToStatic)
         setTiles(staticTiles)
         setRenderCounter(inc)
         requestAnimationFrame(() => {
-            const result = move(staticTiles, direction)
+            const result = move(staticTiles, direction, randomRef.current)
             setTiles(result.tiles)
             if (result.scoreDelta > 0) {
                 setScoreDeltas((deltas) => [...deltas, result.scoreDelta])
@@ -285,12 +294,6 @@ function useTileSlide() {
             window.removeEventListener('keydown', handleKeyDown)
         }
     }, [])
-
-    const resetGame = () => {
-        setTiles(INITIAL_STATE.tiles)
-        setRenderCounter(INITIAL_STATE.renderCounter)
-        setScoreDeltas(INITIAL_STATE.scoreDeltas)
-    }
 
     return { tiles, renderCounter, scoreDeltas, resetGame }
 }
