@@ -314,6 +314,27 @@ function useTileSlide() {
         setGameStatus('continue')
     }
 
+    const setUpTestWin = () => {
+        const tiles: Tiles = [
+            { value: 1024, position: { row: 0, col: 0 }, state: { type: 'static' } },
+            { value: 1024, position: { row: 0, col: 1 }, state: { type: 'static' } },
+        ]
+        setTiles(tiles)
+        setGameStatus('playing')
+        setScoreDeltas([])
+    }
+
+    const setUpTestGameOver = () => {
+        const tiles: Tiles = ALL_POSITIONS.map((position, index) => ({
+            value: index % 2 === 0 ? 2 : 4,
+            position,
+            state: { type: 'static' } as const,
+        }))
+        setTiles(tiles)
+        setGameStatus('playing')
+        setScoreDeltas([])
+    }
+
     const onMove = useEffectEvent((direction: Direction) => {
         if (gameStatus === 'won' || gameStatus === 'over') return
 
@@ -348,11 +369,11 @@ function useTileSlide() {
         }
     }, [])
 
-    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame }
+    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver }
 }
 
 export function TileSlideDemo3() {
-    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame } =
+    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver } =
         useTileSlide()
     const score = scoreDeltas.reduce((a, b) => a + b, 0)
 
@@ -443,6 +464,37 @@ export function TileSlideDemo3() {
                         buttons={[{ label: 'New Game', onClick: resetGame }]}
                     />
                 )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button
+                    onClick={setUpTestWin}
+                    style={{
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        backgroundColor: '#5a5a5a',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    Test Win
+                </button>
+                <button
+                    onClick={setUpTestGameOver}
+                    style={{
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        backgroundColor: '#5a5a5a',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    Test Game Over
+                </button>
             </div>
         </div>
     )
