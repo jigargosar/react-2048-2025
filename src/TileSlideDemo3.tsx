@@ -443,25 +443,10 @@ export function TileSlideDemo3() {
     const score = sumScoreDeltas(scoreDeltas)
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                background: '#1a1a1a',
-                userSelect: 'none',
-            }}
-        >
+        <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 select-none">
             <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
-                    marginBottom: '20px',
-                }}
+                className="flex justify-between items-center mb-5"
+                style={{ width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px` }}
             >
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ position: 'relative' }}>
