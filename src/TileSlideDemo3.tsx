@@ -38,13 +38,18 @@ type ScoreDeltas = readonly number[]
 type Random = () => number
 type GameStatus = 'playing' | 'won' | 'continue' | 'over'
 
-const TILES_TO_SPAWN = 1
-const GRID_SIZE = 5
-const TILE_SIZE = 100
+const CONFIG = {
+    gridSize: 5,
+    tileSizePx: 100,
+    tilesToSpawnPerMove: 1,
+    winValue: 2048,
+    minSwipeDetectDistancePx: 30,
+    localStorageBestScoreKey: 'bestScore',
+}
 
 const POSITION_MATRIX: Matrix<Position> = times(
-    (row) => times((col) => ({ row, col }), GRID_SIZE),
-    GRID_SIZE,
+    (row) => times((col) => ({ row, col }), CONFIG.gridSize),
+    CONFIG.gridSize,
 )
 const ALL_POSITIONS: Positions = POSITION_MATRIX.flat()
 
@@ -100,7 +105,7 @@ function spawnRandomTiles(tiles: Tiles, count: number, random: Random): Tiles {
 
 function tilesToMatrix(tiles: Tiles): MatrixMaybeTile {
     // Not using MatrixMaybeTile - needs mutable array during construction
-    const matrix: MaybeTile[][] = times(() => repeat(null, GRID_SIZE), GRID_SIZE)
+    const matrix: MaybeTile[][] = times(() => repeat(null, CONFIG.gridSize), CONFIG.gridSize)
     for (const tile of tiles) {
         const row = matrix[tile.position.row]
         if (row) {
@@ -160,7 +165,7 @@ function slideAndMergeRowLeft(row: MaybeTiles): MaybeTiles {
     }
 
     // Not using MaybeTiles - needs mutable array during construction
-    const result: MaybeTile[] = repeat(null, GRID_SIZE)
+    const result: MaybeTile[] = repeat(null, CONFIG.gridSize)
     let writePos = 0
 
     for (const { tile, originalIndex } of nonNullTiles) {
@@ -253,20 +258,18 @@ function sumScoreDeltas(deltas: ScoreDeltas): number {
     return deltas.reduce((a, b) => a + b, 0)
 }
 
-const WIN_VALUE = 2048
-
 function hasWon(tiles: Tiles): boolean {
-    return tiles.some((t) => t.value >= WIN_VALUE)
+    return tiles.some((t) => t.value >= CONFIG.winValue)
 }
 
 function canMove(tiles: Tiles): boolean {
     // Has empty cell
-    if (tiles.length < GRID_SIZE * GRID_SIZE) return true
+    if (tiles.length < CONFIG.gridSize * CONFIG.gridSize) return true
 
     // Has adjacent matching tiles
     const matrix = tilesToMatrix(tiles)
-    for (let row = 0; row < GRID_SIZE; row++) {
-        for (let col = 0; col < GRID_SIZE; col++) {
+    for (let row = 0; row < CONFIG.gridSize; row++) {
+        for (let col = 0; col < CONFIG.gridSize; col++) {
             const tile = matrix[row]?.[col]
             if (!tile) continue
             const right = matrix[row]?.[col + 1]
@@ -295,13 +298,11 @@ function move(tiles: Tiles, direction: Direction): MoveResult {
 
 // VIEW
 
-const SWIPE_THRESHOLD = 30
-
 function parseDirectionFromSwipe(deltaX: number, deltaY: number): Direction | null {
     const absX = Math.abs(deltaX)
     const absY = Math.abs(deltaY)
 
-    if (absX < SWIPE_THRESHOLD && absY < SWIPE_THRESHOLD) return null
+    if (absX < CONFIG.minSwipeDetectDistancePx && absY < CONFIG.minSwipeDetectDistancePx) return null
 
     if (absX > absY) {
         return deltaX > 0 ? 'right' : 'left'
@@ -310,15 +311,13 @@ function parseDirectionFromSwipe(deltaX: number, deltaY: number): Direction | nu
     }
 }
 
-const BEST_SCORE_KEY = 'bestScore'
-
 function loadBestScore(): number {
-    const stored = localStorage.getItem(BEST_SCORE_KEY)
+    const stored = localStorage.getItem(CONFIG.localStorageBestScoreKey)
     return stored ? Number(stored) : 0
 }
 
 function saveBestScore(score: number): void {
-    localStorage.setItem(BEST_SCORE_KEY, String(score))
+    localStorage.setItem(CONFIG.localStorageBestScoreKey, String(score))
 }
 
 function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
@@ -391,7 +390,7 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
             }
 
             // Spawn tile and check game over
-            const tilesAfterSpawn = spawnRandomTiles(result.tiles, TILES_TO_SPAWN, randomRef.current)
+            const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, randomRef.current)
             setTiles(tilesAfterSpawn)
             if (isGameOver(tilesAfterSpawn)) {
                 setGameStatus('over')
@@ -460,7 +459,7 @@ export function TileSlideDemo3() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    width: `${String(TILE_SIZE * GRID_SIZE)}px`,
+                    width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
                     marginBottom: '20px',
                 }}
             >
@@ -510,12 +509,12 @@ export function TileSlideDemo3() {
                     key={renderCounter}
                     style={{
                         display: 'grid',
-                        gridTemplateColumns: `repeat(${String(GRID_SIZE)}, 1fr)`,
-                        gridTemplateRows: `repeat(${String(GRID_SIZE)}, 1fr)`,
+                        gridTemplateColumns: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
+                        gridTemplateRows: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
                         gap: '0',
                         background: '#2d2d2d',
                         borderRadius: '8px',
-                        width: `${String(TILE_SIZE * GRID_SIZE)}px`,
+                        width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
                         aspectRatio: '1/1',
                     }}
                 >
