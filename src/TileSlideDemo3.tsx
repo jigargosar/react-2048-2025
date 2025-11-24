@@ -448,28 +448,21 @@ export function TileSlideDemo3() {
                 className="flex justify-between items-center mb-5"
                 style={{ width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px` }}
             >
-                <div style={{ display: 'flex', gap: '20px' }}>
-                    <div style={{ position: 'relative' }}>
-                        <span style={{ color: '#fff', fontSize: '24px' }}>
+                <div className="flex gap-5">
+                    <div className="relative">
+                        <span className="text-white text-2xl">
                             Score: {score}
                         </span>
                         {scoreDeltas.map((delta, index) => (
                             <span
                                 key={index}
-                                className="score-pop-anim"
-                                style={{
-                                    position: 'absolute',
-                                    right: '-50px',
-                                    top: '0',
-                                    color: '#6f6',
-                                    fontSize: '18px',
-                                }}
+                                className="score-pop-anim absolute -right-12 top-0 text-green-400 text-lg"
                             >
                                 +{delta}
                             </span>
                         ))}
                     </div>
-                    <span style={{ color: '#888', fontSize: '24px' }}>
+                    <span className="text-neutral-500 text-2xl">
                         Best: {bestScore}
                     </span>
                 </div>
