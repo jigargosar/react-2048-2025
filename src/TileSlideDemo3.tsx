@@ -428,6 +428,7 @@ export function TileSlideDemo3() {
                 justifyContent: 'center',
                 minHeight: '100vh',
                 background: '#1a1a1a',
+                userSelect: 'none',
             }}
         >
             <div
