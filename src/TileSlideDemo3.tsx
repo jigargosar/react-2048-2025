@@ -280,16 +280,13 @@ function isGameOver(tiles: Tiles): boolean {
 
 type MoveResult = { tiles: Tiles; scoreDelta: number }
 
-function move(tiles: Tiles, direction: Direction, random: Random): MoveResult {
+function move(tiles: Tiles, direction: Direction): MoveResult {
     const movedTiles = slideAndMergeTiles(tiles, direction)
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
     if (allStatic) return { tiles, scoreDelta: 0 }
 
     const scoreDelta = computeScoreDelta(movedTiles)
-    return {
-        tiles: spawnRandomTiles(movedTiles, TILES_TO_SPAWN, random),
-        scoreDelta,
-    }
+    return { tiles: movedTiles, scoreDelta }
 }
 
 // VIEW
@@ -342,16 +339,22 @@ function useTileSlide() {
         setTiles(staticTiles)
         setRenderCounter(inc)
         requestAnimationFrame(() => {
-            const result = move(staticTiles, direction, randomRef.current)
-            setTiles(result.tiles)
+            const result = move(staticTiles, direction)
             if (result.scoreDelta > 0) {
                 setScoreDeltas((deltas) => [...deltas, result.scoreDelta])
             }
 
-            // Check game status after move
+            // Check win first - no spawn on win
             if (gameStatus === 'playing' && hasWon(result.tiles)) {
+                setTiles(result.tiles)
                 setGameStatus('won')
-            } else if (isGameOver(result.tiles)) {
+                return
+            }
+
+            // Spawn tile and check game over
+            const tilesAfterSpawn = spawnRandomTiles(result.tiles, TILES_TO_SPAWN, randomRef.current)
+            setTiles(tilesAfterSpawn)
+            if (isGameOver(tilesAfterSpawn)) {
                 setGameStatus('over')
             }
         })
@@ -518,14 +521,28 @@ function GameOverlay({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
                 borderRadius: '8px',
             }}
         >
-            <h2 style={{ color: '#fff', fontSize: '36px', marginBottom: '20px' }}>
-                {title}
-            </h2>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{
+                backgroundColor: '#2d2d2d',
+                padding: '30px 40px',
+                borderRadius: '12px',
+                border: '2px solid #555',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+            }}>
+                <h2 style={{
+                    color: '#fff',
+                    fontSize: '36px',
+                    marginBottom: '20px',
+                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+                }}>
+                    {title}
+                </h2>
+                <div style={{ display: 'flex', gap: '10px' }}>
                 {buttons.map((button) => (
                     <button
                         key={button.label}
@@ -543,6 +560,7 @@ function GameOverlay({
                         {button.label}
                     </button>
                 ))}
+                </div>
             </div>
         </div>
     )
