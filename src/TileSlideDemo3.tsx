@@ -36,6 +36,7 @@ type MaybeTiles = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
 type ScoreDeltas = readonly number[]
 type Random = () => number
+type GameStatus = 'playing' | 'won' | 'continue' | 'over'
 
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 5
@@ -47,20 +48,26 @@ const POSITION_MATRIX: Matrix<Position> = times(
 )
 const ALL_POSITIONS: Positions = POSITION_MATRIX.flat()
 
-// Hardcoded initial tiles
-const INITIAL_TILES: Tiles = [
-    { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
-    { value: 4, position: { row: 0, col: 2 }, state: { type: 'static' } },
-    { value: 2, position: { row: 1, col: 1 }, state: { type: 'static' } },
-    { value: 8, position: { row: 2, col: 3 }, state: { type: 'static' } },
-    { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
-]
+type InitialState = {
+    tiles: Tiles
+    scoreDeltas: ScoreDeltas
+    renderCounter: number
+    randomSeed: number
+    gameStatus: GameStatus
+}
 
-const INITIAL_STATE = {
-    tiles: INITIAL_TILES,
+const INITIAL_STATE: InitialState = {
+    tiles: [
+        { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
+        { value: 4, position: { row: 0, col: 2 }, state: { type: 'static' } },
+        { value: 2, position: { row: 1, col: 1 }, state: { type: 'static' } },
+        { value: 8, position: { row: 2, col: 3 }, state: { type: 'static' } },
+        { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
+    ],
     scoreDeltas: [],
     renderCounter: 0,
     randomSeed: 1,
+    gameStatus: 'playing',
 }
 
 function getEmptyPositions(tiles: Tiles): Positions {
@@ -242,6 +249,35 @@ function computeScoreDelta(tiles: Tiles): number {
         .reduce((sum, t) => sum + t.value, 0)
 }
 
+const WIN_VALUE = 2048
+
+function hasWon(tiles: Tiles): boolean {
+    return tiles.some((t) => t.value >= WIN_VALUE)
+}
+
+function canMove(tiles: Tiles): boolean {
+    // Has empty cell
+    if (tiles.length < GRID_SIZE * GRID_SIZE) return true
+
+    // Has adjacent matching tiles
+    const matrix = tilesToMatrix(tiles)
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            const tile = matrix[row]?.[col]
+            if (!tile) continue
+            const right = matrix[row]?.[col + 1]
+            const down = matrix[row + 1]?.[col]
+            if (right && right.value === tile.value) return true
+            if (down && down.value === tile.value) return true
+        }
+    }
+    return false
+}
+
+function isGameOver(tiles: Tiles): boolean {
+    return !canMove(tiles)
+}
+
 type MoveResult = { tiles: Tiles; scoreDelta: number }
 
 function move(tiles: Tiles, direction: Direction, random: Random): MoveResult {
@@ -262,16 +298,25 @@ function useTileSlide() {
     const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
     const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
     const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>(INITIAL_STATE.scoreDeltas)
+    const [gameStatus, setGameStatus] = useState<GameStatus>(INITIAL_STATE.gameStatus)
     const randomRef = useRef(createSeededRandom(INITIAL_STATE.randomSeed))
 
     const resetGame = () => {
         setTiles(INITIAL_STATE.tiles)
         setRenderCounter(INITIAL_STATE.renderCounter)
         setScoreDeltas(INITIAL_STATE.scoreDeltas)
+        setGameStatus(INITIAL_STATE.gameStatus)
         randomRef.current = createSeededRandom(INITIAL_STATE.randomSeed)
     }
 
+    const continueGame = () => {
+        if (gameStatus !== 'won') return
+        setGameStatus('continue')
+    }
+
     const onMove = useEffectEvent((direction: Direction) => {
+        if (gameStatus === 'won' || gameStatus === 'over') return
+
         const staticTiles = tiles.map(setTileStateToStatic)
         setTiles(staticTiles)
         setRenderCounter(inc)
@@ -280,6 +325,13 @@ function useTileSlide() {
             setTiles(result.tiles)
             if (result.scoreDelta > 0) {
                 setScoreDeltas((deltas) => [...deltas, result.scoreDelta])
+            }
+
+            // Check game status after move
+            if (gameStatus === 'playing' && hasWon(result.tiles)) {
+                setGameStatus('won')
+            } else if (isGameOver(result.tiles)) {
+                setGameStatus('over')
             }
         })
     })
@@ -296,11 +348,12 @@ function useTileSlide() {
         }
     }, [])
 
-    return { tiles, renderCounter, scoreDeltas, resetGame }
+    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame }
 }
 
 export function TileSlideDemo3() {
-    const { tiles, renderCounter, scoreDeltas, resetGame } = useTileSlide()
+    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame } =
+        useTileSlide()
     const score = scoreDeltas.reduce((a, b) => a + b, 0)
 
     return (
@@ -359,20 +412,85 @@ export function TileSlideDemo3() {
                 </button>
             </div>
 
-            <div
-                key={renderCounter}
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${String(GRID_SIZE)}, 1fr)`,
-                    gridTemplateRows: `repeat(${String(GRID_SIZE)}, 1fr)`,
-                    gap: '0',
-                    background: '#2d2d2d',
-                    borderRadius: '8px',
-                    width: `${String(TILE_SIZE * GRID_SIZE)}px`,
-                    aspectRatio: '1/1',
-                }}
-            >
-                {renderTiles(tiles)}
+            <div style={{ position: 'relative' }}>
+                <div
+                    key={renderCounter}
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${String(GRID_SIZE)}, 1fr)`,
+                        gridTemplateRows: `repeat(${String(GRID_SIZE)}, 1fr)`,
+                        gap: '0',
+                        background: '#2d2d2d',
+                        borderRadius: '8px',
+                        width: `${String(TILE_SIZE * GRID_SIZE)}px`,
+                        aspectRatio: '1/1',
+                    }}
+                >
+                    {renderTiles(tiles)}
+                </div>
+                {gameStatus === 'won' && (
+                    <GameOverlay
+                        title="You Won!"
+                        buttons={[
+                            { label: 'Continue', onClick: continueGame },
+                            { label: 'New Game', onClick: resetGame },
+                        ]}
+                    />
+                )}
+                {gameStatus === 'over' && (
+                    <GameOverlay
+                        title="Game Over"
+                        buttons={[{ label: 'New Game', onClick: resetGame }]}
+                    />
+                )}
+            </div>
+        </div>
+    )
+}
+
+type OverlayButton = { label: string; onClick: () => void }
+
+function GameOverlay({
+    title,
+    buttons,
+}: {
+    title: string
+    buttons: OverlayButton[]
+}) {
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                borderRadius: '8px',
+            }}
+        >
+            <h2 style={{ color: '#fff', fontSize: '36px', marginBottom: '20px' }}>
+                {title}
+            </h2>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                {buttons.map((button) => (
+                    <button
+                        key={button.label}
+                        onClick={button.onClick}
+                        style={{
+                            padding: '10px 20px',
+                            fontSize: '18px',
+                            backgroundColor: '#8f7a66',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {button.label}
+                    </button>
+                ))}
             </div>
         </div>
     )
