@@ -56,6 +56,12 @@ const INITIAL_TILES: Tiles = [
     { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
 ]
 
+const INITIAL_STATE = {
+    tiles: INITIAL_TILES,
+    scoreDeltas: [],
+    renderCounter: 0,
+}
+
 function getEmptyPositions(tiles: Tiles): Positions {
     const matrix = tilesToMatrix(tiles)
     return ALL_POSITIONS.filter((p) => matrix[p.row]?.[p.col] === null)
@@ -251,9 +257,9 @@ function move(tiles: Tiles, direction: Direction): MoveResult {
 // VIEW
 
 function useTileSlide() {
-    const [tiles, setTiles] = useState<Tiles>(INITIAL_TILES)
-    const [renderCounter, setRenderCounter] = useState(0)
-    const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>([])
+    const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
+    const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
+    const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>(INITIAL_STATE.scoreDeltas)
 
     const onMove = useEffectEvent((direction: Direction) => {
         const staticTiles = tiles.map(setTileStateToStatic)
@@ -280,11 +286,17 @@ function useTileSlide() {
         }
     }, [])
 
-    return { tiles, renderCounter, scoreDeltas }
+    const resetGame = () => {
+        setTiles(INITIAL_STATE.tiles)
+        setRenderCounter(INITIAL_STATE.renderCounter)
+        setScoreDeltas(INITIAL_STATE.scoreDeltas)
+    }
+
+    return { tiles, renderCounter, scoreDeltas, resetGame }
 }
 
 export function TileSlideDemo3() {
-    const { tiles, renderCounter, scoreDeltas } = useTileSlide()
+    const { tiles, renderCounter, scoreDeltas, resetGame } = useTileSlide()
     const score = scoreDeltas.reduce((a, b) => a + b, 0)
 
     return (
@@ -298,25 +310,49 @@ export function TileSlideDemo3() {
                 background: '#1a1a1a',
             }}
         >
-            <div style={{ position: 'relative', marginBottom: '20px' }}>
-                <span style={{ color: '#fff', fontSize: '24px' }}>
-                    Score: {score}
-                </span>
-                {scoreDeltas.map((delta, index) => (
-                    <span
-                        key={index}
-                        className="score-pop-anim"
-                        style={{
-                            position: 'absolute',
-                            right: '-50px',
-                            top: '0',
-                            color: '#6f6',
-                            fontSize: '18px',
-                        }}
-                    >
-                        +{delta}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: `${String(TILE_SIZE * GRID_SIZE)}px`,
+                    marginBottom: '20px',
+                }}
+            >
+                <div style={{ position: 'relative' }}>
+                    <span style={{ color: '#fff', fontSize: '24px' }}>
+                        Score: {score}
                     </span>
-                ))}
+                    {scoreDeltas.map((delta, index) => (
+                        <span
+                            key={index}
+                            className="score-pop-anim"
+                            style={{
+                                position: 'absolute',
+                                right: '-50px',
+                                top: '0',
+                                color: '#6f6',
+                                fontSize: '18px',
+                            }}
+                        >
+                            +{delta}
+                        </span>
+                    ))}
+                </div>
+                <button
+                    onClick={resetGame}
+                    style={{
+                        padding: '8px 16px',
+                        fontSize: '16px',
+                        backgroundColor: '#8f7a66',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    New Game
+                </button>
             </div>
 
             <div
