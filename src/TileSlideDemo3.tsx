@@ -291,6 +291,21 @@ function move(tiles: Tiles, direction: Direction): MoveResult {
 
 // VIEW
 
+const SWIPE_THRESHOLD = 30
+
+function parseDirectionFromSwipe(deltaX: number, deltaY: number): Direction | null {
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
+
+    if (absX < SWIPE_THRESHOLD && absY < SWIPE_THRESHOLD) return null
+
+    if (absX > absY) {
+        return deltaX > 0 ? 'right' : 'left'
+    } else {
+        return deltaY > 0 ? 'down' : 'up'
+    }
+}
+
 function useTileSlide() {
     const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
     const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
@@ -360,23 +375,48 @@ function useTileSlide() {
         })
     })
 
+    const gridRef = useRef<HTMLDivElement>(null)
+
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             const direction = parseDirectionFromKey(event.key)
             if (direction) onMove(direction)
         }
 
+        let pointerStart: { x: number; y: number } | null = null
+
+        function handlePointerDown(event: PointerEvent) {
+            pointerStart = { x: event.clientX, y: event.clientY }
+        }
+
+        function handlePointerUp(event: PointerEvent) {
+            if (!pointerStart) return
+
+            const deltaX = event.clientX - pointerStart.x
+            const deltaY = event.clientY - pointerStart.y
+            pointerStart = null
+
+            const direction = parseDirectionFromSwipe(deltaX, deltaY)
+            if (direction) onMove(direction)
+        }
+
+        const grid = gridRef.current
         window.addEventListener('keydown', handleKeyDown)
+        grid?.addEventListener('pointerdown', handlePointerDown)
+        grid?.addEventListener('pointerup', handlePointerUp)
+
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
+            grid?.removeEventListener('pointerdown', handlePointerDown)
+            grid?.removeEventListener('pointerup', handlePointerUp)
         }
     }, [])
 
-    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver }
+    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, gridRef }
 }
 
 export function TileSlideDemo3() {
-    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver } =
+    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, gridRef } =
         useTileSlide()
     const score = scoreDeltas.reduce((a, b) => a + b, 0)
 
@@ -436,7 +476,7 @@ export function TileSlideDemo3() {
                 </button>
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div ref={gridRef} style={{ position: 'relative', touchAction: 'none' }}>
                 <div
                     key={renderCounter}
                     style={{
