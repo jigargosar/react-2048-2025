@@ -306,7 +306,7 @@ function parseDirectionFromSwipe(deltaX: number, deltaY: number): Direction | nu
     }
 }
 
-function useTileSlide() {
+function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
     const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
     const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>(INITIAL_STATE.scoreDeltas)
@@ -375,8 +375,6 @@ function useTileSlide() {
         })
     })
 
-    const gridRef = useRef<HTMLDivElement>(null)
-
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             const direction = parseDirectionFromKey(event.key)
@@ -410,14 +408,15 @@ function useTileSlide() {
             grid?.removeEventListener('pointerdown', handlePointerDown)
             grid?.removeEventListener('pointerup', handlePointerUp)
         }
-    }, [])
+    }, [gridRef])
 
-    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, gridRef }
+    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver }
 }
 
 export function TileSlideDemo3() {
-    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, gridRef } =
-        useTileSlide()
+    const gridRef = useRef<HTMLDivElement>(null)
+    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver } =
+        useTileSlide(gridRef)
     const score = scoreDeltas.reduce((a, b) => a + b, 0)
 
     return (
