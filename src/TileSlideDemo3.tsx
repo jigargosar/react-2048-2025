@@ -468,15 +468,7 @@ export function TileSlideDemo3() {
                 </div>
                 <button
                     onClick={resetGame}
-                    style={{
-                        padding: '8px 16px',
-                        fontSize: '16px',
-                        backgroundColor: '#8f7a66',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
+                    className="py-2 px-4 text-base bg-amber-700 text-white rounded cursor-pointer"
                 >
                     New Game
                 </button>
@@ -537,32 +529,16 @@ export function TileSlideDemo3() {
                 )}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+            <div className="flex gap-2 mt-5">
                 <button
                     onClick={setUpTestWin}
-                    style={{
-                        padding: '8px 16px',
-                        fontSize: '14px',
-                        backgroundColor: '#5a5a5a',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
+                    className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
                 >
                     Test Win
                 </button>
                 <button
                     onClick={setUpTestGameOver}
-                    style={{
-                        padding: '8px 16px',
-                        fontSize: '14px',
-                        backgroundColor: '#5a5a5a',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
+                    className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
                 >
                     Test Game Over
                 </button>
