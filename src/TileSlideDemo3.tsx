@@ -249,6 +249,10 @@ function computeScoreDelta(tiles: Tiles): number {
         .reduce((sum, t) => sum + t.value, 0)
 }
 
+function sumScoreDeltas(deltas: ScoreDeltas): number {
+    return deltas.reduce((a, b) => a + b, 0)
+}
+
 const WIN_VALUE = 2048
 
 function hasWon(tiles: Tiles): boolean {
@@ -306,11 +310,23 @@ function parseDirectionFromSwipe(deltaX: number, deltaY: number): Direction | nu
     }
 }
 
+const BEST_SCORE_KEY = 'bestScore'
+
+function loadBestScore(): number {
+    const stored = localStorage.getItem(BEST_SCORE_KEY)
+    return stored ? Number(stored) : 0
+}
+
+function saveBestScore(score: number): void {
+    localStorage.setItem(BEST_SCORE_KEY, String(score))
+}
+
 function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
     const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
     const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>(INITIAL_STATE.scoreDeltas)
     const [gameStatus, setGameStatus] = useState<GameStatus>(INITIAL_STATE.gameStatus)
+    const [bestScore, setBestScore] = useState(loadBestScore)
     const randomRef = useRef(createSeededRandom(INITIAL_STATE.randomSeed))
 
     const resetGame = () => {
@@ -356,7 +372,15 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
         requestAnimationFrame(() => {
             const result = move(staticTiles, direction)
             if (result.scoreDelta > 0) {
-                setScoreDeltas((deltas) => [...deltas, result.scoreDelta])
+                setScoreDeltas((deltas) => {
+                    const newDeltas = [...deltas, result.scoreDelta]
+                    const newScore = sumScoreDeltas(newDeltas)
+                    if (newScore > bestScore) {
+                        setBestScore(newScore)
+                        saveBestScore(newScore)
+                    }
+                    return newDeltas
+                })
             }
 
             // Check win first - no spawn on win
@@ -410,14 +434,14 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
         }
     }, [gridRef])
 
-    return { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver }
+    return { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver }
 }
 
 export function TileSlideDemo3() {
     const gridRef = useRef<HTMLDivElement>(null)
-    const { tiles, renderCounter, scoreDeltas, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver } =
+    const { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver } =
         useTileSlide(gridRef)
-    const score = scoreDeltas.reduce((a, b) => a + b, 0)
+    const score = sumScoreDeltas(scoreDeltas)
 
     return (
         <div
@@ -440,25 +464,30 @@ export function TileSlideDemo3() {
                     marginBottom: '20px',
                 }}
             >
-                <div style={{ position: 'relative' }}>
-                    <span style={{ color: '#fff', fontSize: '24px' }}>
-                        Score: {score}
-                    </span>
-                    {scoreDeltas.map((delta, index) => (
-                        <span
-                            key={index}
-                            className="score-pop-anim"
-                            style={{
-                                position: 'absolute',
-                                right: '-50px',
-                                top: '0',
-                                color: '#6f6',
-                                fontSize: '18px',
-                            }}
-                        >
-                            +{delta}
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div style={{ position: 'relative' }}>
+                        <span style={{ color: '#fff', fontSize: '24px' }}>
+                            Score: {score}
                         </span>
-                    ))}
+                        {scoreDeltas.map((delta, index) => (
+                            <span
+                                key={index}
+                                className="score-pop-anim"
+                                style={{
+                                    position: 'absolute',
+                                    right: '-50px',
+                                    top: '0',
+                                    color: '#6f6',
+                                    fontSize: '18px',
+                                }}
+                            >
+                                +{delta}
+                            </span>
+                        ))}
+                    </div>
+                    <span style={{ color: '#888', fontSize: '24px' }}>
+                        Best: {bestScore}
+                    </span>
                 </div>
                 <button
                     onClick={resetGame}
@@ -490,6 +519,28 @@ export function TileSlideDemo3() {
                         aspectRatio: '1/1',
                     }}
                 >
+                    {ALL_POSITIONS.map((pos) => (
+                        <div
+                            key={`empty-${String(pos.row)}-${String(pos.col)}`}
+                            style={{
+                                gridRow: pos.row + 1,
+                                gridColumn: pos.col + 1,
+                                width: '100%',
+                                height: '100%',
+                                padding: '5px',
+                                boxSizing: 'border-box',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    backgroundColor: '#3d3d3d',
+                                    borderRadius: '4px',
+                                }}
+                            />
+                        </div>
+                    ))}
                     {renderTiles(tiles)}
                 </div>
                 {gameStatus === 'won' && (
