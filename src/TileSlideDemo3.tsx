@@ -92,6 +92,7 @@ function spawnRandomTiles(tiles: Tiles, count: number, random: Random): Tiles {
 }
 
 function tilesToMatrix(tiles: Tiles): MatrixMaybeTile {
+    // Not using MatrixMaybeTile - needs mutable array during construction
     const matrix: MaybeTile[][] = times(() => repeat(null, GRID_SIZE), GRID_SIZE)
     for (const tile of tiles) {
         const row = matrix[tile.position.row]
@@ -151,7 +152,7 @@ function slideAndMergeRowLeft(row: MaybeTiles): MaybeTiles {
         }
     }
 
-    // Build result array with merging logic
+    // Not using MaybeTiles - needs mutable array during construction
     const result: MaybeTile[] = repeat(null, GRID_SIZE)
     let writePos = 0
 
