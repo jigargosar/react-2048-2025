@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { pipe } from 'fp-ts/function'
 import { flatten, inc, repeat, times } from 'ramda'
 import {
@@ -34,6 +34,7 @@ type Positions = readonly Position[]
 type Direction = 'left' | 'right' | 'up' | 'down'
 type MaybeTiles = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
+type ScoreDeltas = readonly number[]
 
 const TILES_TO_SPAWN = 1
 const GRID_SIZE = 5
@@ -227,11 +228,24 @@ function parseDirectionFromKey(key: string): Direction | null {
     }
 }
 
-function move(tiles: Tiles, direction: Direction): Tiles {
+function computeScoreDelta(tiles: Tiles): number {
+    return tiles
+        .filter((t) => t.state.type === 'merged')
+        .reduce((sum, t) => sum + t.value, 0)
+}
+
+type MoveResult = { tiles: Tiles; scoreDelta: number }
+
+function move(tiles: Tiles, direction: Direction): MoveResult {
     const movedTiles = slideAndMergeTiles(tiles, direction)
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
-    if (allStatic) return tiles
-    return spawnRandomTiles(movedTiles, TILES_TO_SPAWN)
+    if (allStatic) return { tiles, scoreDelta: 0 }
+
+    const scoreDelta = computeScoreDelta(movedTiles)
+    return {
+        tiles: spawnRandomTiles(movedTiles, TILES_TO_SPAWN),
+        scoreDelta,
+    }
 }
 
 // VIEW
@@ -239,17 +253,25 @@ function move(tiles: Tiles, direction: Direction): Tiles {
 function useTileSlide() {
     const [tiles, setTiles] = useState<Tiles>(INITIAL_TILES)
     const [renderCounter, setRenderCounter] = useState(0)
+    const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>([])
+
+    const onMove = useEffectEvent((direction: Direction) => {
+        const staticTiles = tiles.map(setTileStateToStatic)
+        setTiles(staticTiles)
+        setRenderCounter(inc)
+        requestAnimationFrame(() => {
+            const result = move(staticTiles, direction)
+            setTiles(result.tiles)
+            if (result.scoreDelta > 0) {
+                setScoreDeltas((deltas) => [...deltas, result.scoreDelta])
+            }
+        })
+    })
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             const direction = parseDirectionFromKey(event.key)
-            if (!direction) return
-
-            setTiles((prevTiles) => prevTiles.map(setTileStateToStatic))
-            setRenderCounter(inc)
-            requestAnimationFrame(() => {
-                setTiles((prevTiles) => move(prevTiles, direction))
-            })
+            if (direction) onMove(direction)
         }
 
         window.addEventListener('keydown', handleKeyDown)
@@ -258,11 +280,12 @@ function useTileSlide() {
         }
     }, [])
 
-    return { tiles, renderCounter }
+    return { tiles, renderCounter, scoreDeltas }
 }
 
 export function TileSlideDemo3() {
-    const { tiles, renderCounter } = useTileSlide()
+    const { tiles, renderCounter, scoreDeltas } = useTileSlide()
+    const score = scoreDeltas.reduce((a, b) => a + b, 0)
 
     return (
         <div
@@ -275,9 +298,26 @@ export function TileSlideDemo3() {
                 background: '#1a1a1a',
             }}
         >
-            <h1 style={{ marginBottom: '20px', color: '#fff' }}>
-                2048 Demo 3 - Hardcoded Tiles
-            </h1>
+            <div style={{ position: 'relative', marginBottom: '20px' }}>
+                <span style={{ color: '#fff', fontSize: '24px' }}>
+                    Score: {score}
+                </span>
+                {scoreDeltas.map((delta, index) => (
+                    <span
+                        key={index}
+                        className="score-pop-anim"
+                        style={{
+                            position: 'absolute',
+                            right: '-50px',
+                            top: '0',
+                            color: '#6f6',
+                            fontSize: '18px',
+                        }}
+                    >
+                        +{delta}
+                    </span>
+                ))}
+            </div>
 
             <div
                 key={renderCounter}

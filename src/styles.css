@@ -64,3 +64,18 @@ Animation Timeline:
         transform: scale(1);
     }
 }
+
+.score-pop-anim {
+    animation: score-pop 600ms ease-out forwards;
+}
+
+@keyframes score-pop {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+}
