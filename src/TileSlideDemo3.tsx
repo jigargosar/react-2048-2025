@@ -448,23 +448,23 @@ export function TileSlideDemo3() {
                 className="flex justify-between items-center mb-5"
                 style={{ width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px` }}
             >
-                <div className="flex gap-5">
-                    <div className="relative">
-                        <span className="text-white text-2xl">
-                            Score: {score}
-                        </span>
+                <div className="flex gap-3">
+                    <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+                        <div className="text-neutral-400 text-sm uppercase">Score</div>
+                        <div className="text-white text-2xl font-bold">{score}</div>
                         {scoreDeltas.map((delta, index) => (
-                            <span
+                            <div
                                 key={index}
-                                className="score-pop-anim absolute -right-12 top-0 text-green-400 text-lg"
+                                className="score-pop-anim text-green-400 text-lg"
                             >
                                 +{delta}
-                            </span>
+                            </div>
                         ))}
                     </div>
-                    <span className="text-neutral-500 text-2xl">
-                        Best: {bestScore}
-                    </span>
+                    <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+                        <div className="text-neutral-400 text-sm uppercase">Best</div>
+                        <div className="text-white text-2xl font-bold">{bestScore}</div>
+                    </div>
                 </div>
                 <button
                     onClick={resetGame}
@@ -474,18 +474,14 @@ export function TileSlideDemo3() {
                 </button>
             </div>
 
-            <div ref={gridRef} style={{ position: 'relative', touchAction: 'none' }}>
+            <div ref={gridRef} className="relative touch-none">
                 <div
                     key={renderCounter}
+                    className="grid bg-neutral-800 rounded-lg aspect-square"
                     style={{
-                        display: 'grid',
                         gridTemplateColumns: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
                         gridTemplateRows: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
-                        gap: '0',
-                        background: '#2d2d2d',
-                        borderRadius: '8px',
                         width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
-                        aspectRatio: '1/1',
                     }}
                 >
                     {ALL_POSITIONS.map((pos) => (
