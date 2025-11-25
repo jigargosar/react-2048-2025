@@ -39,7 +39,7 @@ type Random = () => number
 type GameStatus = 'playing' | 'won' | 'continue' | 'over'
 
 const CONFIG = {
-    gridSize: 5,
+    gridSize: 4,
     tileSizePx: 100,
     tilesToSpawnPerMove: 1,
     winValue: 2048,
@@ -443,7 +443,7 @@ export function TileSlideDemo3() {
     const score = sumScoreDeltas(scoreDeltas)
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 select-none">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 select-none py-8">
             <div
                 className="flex justify-between items-center mb-5"
                 style={{ width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px` }}
