@@ -362,6 +362,18 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
         setScoreDeltas([])
     }
 
+    const setUpTestTiles = () => {
+        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
+        const tiles: Tiles = ALL_POSITIONS.map((position, index) => ({
+            value: values[index] || 2,
+            position,
+            state: { type: 'static' } as const,
+        }))
+        setTiles(tiles)
+        setGameStatus('playing')
+        setScoreDeltas([])
+    }
+
     const onMove = useEffectEvent((direction: Direction) => {
         if (gameStatus === 'won' || gameStatus === 'over') return
 
@@ -433,12 +445,12 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
         }
     }, [gridRef])
 
-    return { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver }
+    return { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, setUpTestTiles }
 }
 
 export function TileSlideDemo3() {
     const gridRef = useRef<HTMLDivElement>(null)
-    const { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver } =
+    const { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, setUpTestTiles } =
         useTileSlide(gridRef)
     const score = sumScoreDeltas(scoreDeltas)
 
@@ -541,6 +553,12 @@ export function TileSlideDemo3() {
                 >
                     Test Game Over
                 </button>
+                <button
+                    onClick={setUpTestTiles}
+                    className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
+                >
+                    Test Tiles
+                </button>
             </div>
         </div>
     )
@@ -611,23 +629,28 @@ function GameOverlay({
 
 function getTileColor(value: number): string {
     const colors: Record<number, string> = {
-        2: '#eee4da',
-        4: '#ede0c8',
-        8: '#f2b179',
-        16: '#f59563',
-        32: '#f67c5f',
-        64: '#f65e3b',
-        128: '#edcf72',
-        256: '#edcc61',
-        512: '#edc850',
-        1024: '#edc53f',
-        2048: '#edc22e',
+        2: 'oklch(42% 0.12 0)',
+        4: 'oklch(43% 0.13 33)',
+        8: 'oklch(44% 0.14 66)',
+        16: 'oklch(45% 0.15 99)',
+        32: 'oklch(46% 0.16 132)',
+        64: 'oklch(47% 0.16 165)',
+        128: 'oklch(48% 0.15 198)',
+        256: 'oklch(47% 0.14 231)',
+        512: 'oklch(46% 0.13 264)',
+        1024: 'oklch(45% 0.12 297)',
+        2048: 'oklch(44% 0.12 330)',
+        4096: 'oklch(43% 0.13 363)',
+        8192: 'oklch(44% 0.14 396)',
+        16384: 'oklch(45% 0.15 429)',
+        32768: 'oklch(46% 0.16 462)',
+        65536: 'oklch(47% 0.16 495)',
     }
-    return colors[value] || '#cdc1b4'
+    return colors[value] || 'oklch(40% 0.10 0)'
 }
 
 function getTileTextColor(value: number): string {
-    return value <= 4 ? '#776e65' : '#f9f6f2'
+    return value <= 4 ? '#d4d4d4' : '#f9f6f2'
 }
 
 type TileStyle = React.CSSProperties & {
@@ -649,6 +672,10 @@ type TileRenderProps = {
     key?: string
 }
 
+function makeUnusedParmaUsed<T>(x: T): T {
+    return x
+}
+
 function renderTile({
     from,
     to,
@@ -657,9 +684,9 @@ function renderTile({
     debug,
     key,
 }: TileRenderProps) {
+    makeUnusedParmaUsed(debug)
     const offsetX = (from.col - to.col) * 100
     const offsetY = (from.row - to.row) * 100
-
     const style: TileStyle = {
         gridColumn: to.col + 1,
         gridRow: to.row + 1,
@@ -686,27 +713,9 @@ function renderTile({
                     fontSize: value >= 1000 ? '35px' : '55px',
                     fontWeight: 'bold',
                     position: 'relative',
-                    outline: debug ? `1.5px solid ${debug.bgColor}` : undefined,
                 }}
             >
                 {value}
-                {debug && (
-                    <span
-                        style={{
-                            position: 'absolute',
-                            top: '0',
-                            right: '0',
-                            fontSize: '9px',
-                            color: '#fff',
-                            backgroundColor: debug.bgColor,
-                            padding: '1px 4px',
-                            borderRadius: '0 4px 0 4px',
-                            fontWeight: 'normal',
-                        }}
-                    >
-                        {debug.label}
-                    </span>
-                )}
             </div>
         </div>
     )
