@@ -363,7 +363,7 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const setUpTestTiles = () => {
-        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 99999, 999999, 9999999, 99999999]
         const tiles: Tiles = keepNonNil(
             values.map((value, index) => {
                 const position = ALL_POSITIONS[index]
@@ -714,7 +714,7 @@ function renderTile({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'safe center',
-                    fontSize: value >= 1000 ? '35px' : value >= 100 ? '45px' : '55px',
+                    fontSize: value >= 10000 ? '20px' : value >= 1000 ? '28px' : value >= 100 ? '40px' : '55px',
                     fontWeight: 'bold',
                     position: 'relative',
                     overflow: 'hidden',
