@@ -363,12 +363,18 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const setUpTestTiles = () => {
-        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
-        const tiles: Tiles = ALL_POSITIONS.map((position, index) => ({
-            value: values[index] || 2,
-            position,
-            state: { type: 'static' } as const,
-        }))
+        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+        const tiles: Tiles = keepNonNil(
+            values.map((value, index) => {
+                const position = ALL_POSITIONS[index]
+                if (!position) return null
+                return {
+                    value,
+                    position,
+                    state: { type: 'static' },
+                }
+            })
+        )
         setTiles(tiles)
         setGameStatus('playing')
         setScoreDeltas([])
@@ -629,24 +635,20 @@ function GameOverlay({
 
 function getTileColor(value: number): string {
     const colors: Record<number, string> = {
-        2: 'oklch(42% 0.12 0)',
-        4: 'oklch(43% 0.13 33)',
-        8: 'oklch(44% 0.14 66)',
-        16: 'oklch(45% 0.15 99)',
-        32: 'oklch(46% 0.16 132)',
-        64: 'oklch(47% 0.16 165)',
-        128: 'oklch(48% 0.15 198)',
-        256: 'oklch(47% 0.14 231)',
-        512: 'oklch(46% 0.13 264)',
-        1024: 'oklch(45% 0.12 297)',
-        2048: 'oklch(44% 0.12 330)',
-        4096: 'oklch(43% 0.13 363)',
-        8192: 'oklch(44% 0.14 396)',
-        16384: 'oklch(45% 0.15 429)',
-        32768: 'oklch(46% 0.16 462)',
-        65536: 'oklch(47% 0.16 495)',
+        2: 'oklch(45% 0.14 0)',
+        4: 'oklch(45% 0.14 30)',
+        8: 'oklch(45% 0.14 60)',
+        16: 'oklch(45% 0.14 90)',
+        32: 'oklch(45% 0.14 120)',
+        64: 'oklch(45% 0.14 150)',
+        128: 'oklch(45% 0.14 180)',
+        256: 'oklch(45% 0.14 210)',
+        512: 'oklch(45% 0.14 240)',
+        1024: 'oklch(45% 0.14 270)',
+        2048: 'oklch(45% 0.14 300)',
+        4096: 'oklch(45% 0.14 330)',
     }
-    return colors[value] || 'oklch(40% 0.10 0)'
+    return colors[value] || '#000000'
 }
 
 function getTileTextColor(value: number): string {
