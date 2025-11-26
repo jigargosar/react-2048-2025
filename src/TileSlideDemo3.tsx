@@ -696,6 +696,8 @@ function renderTile({
         height: '100%',
         padding: '5px',
         boxSizing: 'border-box',
+        minWidth: 0,
+        minHeight: 0,
         '--offset-x': `${String(offsetX)}%`,
         '--offset-y': `${String(offsetY)}%`,
     }
@@ -711,13 +713,25 @@ function renderTile({
                     borderRadius: '4px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: value >= 1000 ? '35px' : '55px',
+                    justifyContent: 'safe center',
+                    fontSize: value >= 1000 ? '35px' : value >= 100 ? '45px' : '55px',
                     fontWeight: 'bold',
                     position: 'relative',
+                    overflow: 'hidden',
+                    padding: '0 5px',
                 }}
             >
-                {value}
+                <span
+                    style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        width: '100%',
+                        textAlign: 'center',
+                    }}
+                >
+                    {value}
+                </span>
             </div>
         </div>
     )
