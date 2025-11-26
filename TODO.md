@@ -1,5 +1,4 @@
 - [x] score regression
-- unable to play after clicking test buttons, perhaps any button. no first test button is working.
 - game over test is no longer working
 - dialog margin assessment
 - try using grid for dialog layout 
