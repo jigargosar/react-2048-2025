@@ -352,8 +352,8 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const setUpTestGameOver = () => {
-        const tiles: Tiles = ALL_POSITIONS.map((position, index) => ({
-            value: index % 2 === 0 ? 2 : 4,
+        const tiles: Tiles = ALL_POSITIONS.map((position) => ({
+            value: (position.row + position.col) % 2 === 0 ? 2 : 4,
             position,
             state: { type: 'static' } as const,
         }))
