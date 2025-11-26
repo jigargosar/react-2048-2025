@@ -451,15 +451,18 @@ export function TileSlideDemo3() {
                 <div className="flex gap-3">
                     <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
                         <div className="text-neutral-400 text-sm uppercase">Score</div>
-                        <div className="text-white text-2xl font-bold">{score}</div>
-                        {scoreDeltas.map((delta, index) => (
-                            <div
-                                key={index}
-                                className="score-pop-anim text-green-400 text-lg"
-                            >
-                                +{delta}
-                            </div>
-                        ))}
+                        <div className="grid">
+                            <div className="text-white text-2xl font-bold" style={{ gridArea: '1 / 1' }}>{score}</div>
+                            {scoreDeltas.map((delta, index) => (
+                                <div
+                                    key={index}
+                                    className="score-pop-anim text-green-400 text-lg"
+                                    style={{ gridArea: '1 / 1' }}
+                                >
+                                    +{delta}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
                         <div className="text-neutral-400 text-sm uppercase">Best</div>

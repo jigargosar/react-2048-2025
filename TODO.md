@@ -1,4 +1,4 @@
-- score regression
+- [x] score regression
 - padding issue in devtools
 - unable to play after clicking test buttons, perhaps any button. no first test button is working.
 - need to check if overlays are working
