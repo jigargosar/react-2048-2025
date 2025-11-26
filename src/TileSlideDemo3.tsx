@@ -443,11 +443,11 @@ export function TileSlideDemo3() {
     const score = sumScoreDeltas(scoreDeltas)
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 select-none py-8">
-            <div
-                className="flex justify-between items-center mb-5"
-                style={{ width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px` }}
-            >
+        <div className="min-h-screen bg-neutral-900 select-none flex flex-col justify-center py-8 gap-5 items-center">
+                <div
+                    className="flex justify-between items-center"
+                    style={{ width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px` }}
+                >
                 <div className="flex gap-3">
                     <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
                         <div className="text-neutral-400 text-sm uppercase">Score</div>
@@ -525,7 +525,7 @@ export function TileSlideDemo3() {
                 )}
             </div>
 
-            <div className="flex gap-2 mt-5">
+            <div className="flex gap-2">
                 <button
                     onClick={setUpTestWin}
                     className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
