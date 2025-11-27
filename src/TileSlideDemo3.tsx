@@ -260,11 +260,10 @@ function renderTile({
     return (
         <div key={key} className={`${animClass} w-full h-full p-1 box-border min-w-0 min-h-0`} style={style}>
             <div
-                className="w-full h-full rounded flex items-center relative overflow-hidden font-bold px-1"
+                className="w-full h-full rounded flex items-center relative overflow-hidden font-bold px-1 justify-[safe_center]"
                 style={{
                     backgroundColor: getTileColor(value),
                     color: getTileTextColor(value),
-                    justifyContent: 'safe center',
                     fontSize:
                         value >= 10000
                             ? '20px'
@@ -368,19 +367,9 @@ function GameOverlay({
     buttons: OverlayButton[]
 }) {
     return (
-        <div
-            className="absolute flex flex-col items-center justify-center rounded-lg bg-black/80"
-            style={{
-                inset: 0,
-            }}
-        >
+        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/80">
             <div className="flex flex-col items-center rounded-xl border-2 py-8 px-10 bg-neutral-800 border-neutral-600">
-                <h2
-                    className="text-white mb-5 text-4xl"
-                    style={{
-                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
-                    }}
-                >
+                <h2 className="text-white mb-5 text-4xl">
                     {title}
                 </h2>
                 <div className="flex gap-2.5">
