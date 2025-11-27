@@ -298,23 +298,17 @@ function parseDirectionFromSwipe(deltaX: number, deltaY: number): Direction | nu
     }
 }
 
-// ============================================
-// HOOK - State Management & Coordination
-// ============================================
-
-// Hook-only types
+// Model state type
 type GameStatus = 'playing' | 'won' | 'continue' | 'over'
 
-type InitialState = {
+type Model = {
     tiles: Tiles
     scoreDeltas: ScoreDeltas
-    renderCounter: number
-    randomSeed: number
     gameStatus: GameStatus
+    bestScore: number
 }
 
-// Hook-only constants
-const INITIAL_STATE: InitialState = {
+const INITIAL_MODEL: Model = {
     tiles: [
         { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
         { value: 4, position: { row: 0, col: 2 }, state: { type: 'static' } },
@@ -323,10 +317,17 @@ const INITIAL_STATE: InitialState = {
         { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
     ],
     scoreDeltas: [],
-    renderCounter: 0,
-    randomSeed: 1,
     gameStatus: 'playing',
+    bestScore: 0,
 }
+
+// ============================================
+// HOOK - State Management & Coordination
+// ============================================
+
+// Hook-only constants
+const INITIAL_RENDER_COUNTER = 0
+const INITIAL_RANDOM_SEED = 1
 
 // LocalStorage utilities
 function loadBestScore(): number {
@@ -340,24 +341,25 @@ function saveBestScore(score: number): void {
 
 // Main hook
 function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
-    const [tiles, setTiles] = useState<Tiles>(INITIAL_STATE.tiles)
-    const [renderCounter, setRenderCounter] = useState(INITIAL_STATE.renderCounter)
-    const [scoreDeltas, setScoreDeltas] = useState<ScoreDeltas>(INITIAL_STATE.scoreDeltas)
-    const [gameStatus, setGameStatus] = useState<GameStatus>(INITIAL_STATE.gameStatus)
-    const [bestScore, setBestScore] = useState(loadBestScore)
-    const randomRef = useRef(createSeededRandom(INITIAL_STATE.randomSeed))
+    const [model, setModel] = useState<Model>({
+        ...INITIAL_MODEL,
+        bestScore: loadBestScore(),
+    })
+    const [renderCounter, setRenderCounter] = useState(INITIAL_RENDER_COUNTER)
+    const randomRef = useRef(createSeededRandom(INITIAL_RANDOM_SEED))
 
     const resetGame = () => {
-        setTiles(INITIAL_STATE.tiles)
-        setRenderCounter(INITIAL_STATE.renderCounter)
-        setScoreDeltas(INITIAL_STATE.scoreDeltas)
-        setGameStatus(INITIAL_STATE.gameStatus)
-        randomRef.current = createSeededRandom(INITIAL_STATE.randomSeed)
+        setModel({
+            ...INITIAL_MODEL,
+            bestScore: loadBestScore(),
+        })
+        setRenderCounter(INITIAL_RENDER_COUNTER)
+        randomRef.current = createSeededRandom(INITIAL_RANDOM_SEED)
     }
 
     const continueGame = () => {
-        if (gameStatus !== 'won') return
-        setGameStatus('continue')
+        if (model.gameStatus !== 'won') return
+        setModel({ ...model, gameStatus: 'continue' })
     }
 
     const setUpTestWin = () => {
@@ -365,9 +367,7 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
             { value: 1024, position: { row: 0, col: 0 }, state: { type: 'static' } },
             { value: 1024, position: { row: 0, col: 1 }, state: { type: 'static' } },
         ]
-        setTiles(tiles)
-        setGameStatus('playing')
-        setScoreDeltas([])
+        setModel({ tiles, gameStatus: 'playing', scoreDeltas: [], bestScore: model.bestScore })
     }
 
     const setUpTestGameOver = () => {
@@ -376,9 +376,7 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
             position,
             state: { type: 'static' },
         }))
-        setTiles(tiles)
-        setGameStatus('playing')
-        setScoreDeltas([])
+        setModel({ tiles, gameStatus: 'playing', scoreDeltas: [], bestScore: model.bestScore })
     }
 
     const setUpTestTiles = () => {
@@ -394,44 +392,53 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
                 }
             })
         )
-        setTiles(tiles)
-        setGameStatus('playing')
-        setScoreDeltas([])
+        setModel({ tiles, gameStatus: 'playing', scoreDeltas: [], bestScore: model.bestScore })
     }
 
     const onMove = useEffectEvent((direction: Direction) => {
-        if (gameStatus === 'won' || gameStatus === 'over') return
+        if (model.gameStatus === 'won' || model.gameStatus === 'over') return
 
-        const staticTiles = tiles.map(setTileStateToStatic)
-        setTiles(staticTiles)
+        const staticTiles = model.tiles.map(setTileStateToStatic)
+        setModel({ ...model, tiles: staticTiles })
         setRenderCounter(inc)
         requestAnimationFrame(() => {
             const result = move(staticTiles, direction)
             if (result.scoreDelta > 0) {
-                setScoreDeltas((deltas) => {
-                    const newDeltas = [...deltas, result.scoreDelta]
+                setModel((m) => {
+                    const newDeltas = [...m.scoreDeltas, result.scoreDelta]
                     const newScore = sumScoreDeltas(newDeltas)
-                    if (newScore > bestScore) {
-                        setBestScore(newScore)
-                        saveBestScore(newScore)
+                    const newBestScore = Math.max(m.bestScore, newScore)
+                    if (newBestScore > m.bestScore) {
+                        saveBestScore(newBestScore)
                     }
-                    return newDeltas
-                })
-            }
 
-            // Check win first - no spawn on win
-            if (gameStatus === 'playing' && hasWon(result.tiles)) {
-                setTiles(result.tiles)
-                setGameStatus('won')
+                    // Check win first - no spawn on win
+                    if (m.gameStatus === 'playing' && hasWon(result.tiles)) {
+                        return { ...m, tiles: result.tiles, scoreDeltas: newDeltas, bestScore: newBestScore, gameStatus: 'won' }
+                    }
+
+                    // Spawn tile and check game over
+                    const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, randomRef.current)
+                    const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : m.gameStatus
+
+                    return { ...m, tiles: tilesAfterSpawn, scoreDeltas: newDeltas, bestScore: newBestScore, gameStatus: newGameStatus }
+                })
                 return
             }
 
-            // Spawn tile and check game over
-            const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, randomRef.current)
-            setTiles(tilesAfterSpawn)
-            if (isGameOver(tilesAfterSpawn)) {
-                setGameStatus('over')
-            }
+            // No score delta - check win/spawn anyway
+            setModel((m) => {
+                // Check win first - no spawn on win
+                if (m.gameStatus === 'playing' && hasWon(result.tiles)) {
+                    return { ...m, tiles: result.tiles, gameStatus: 'won' }
+                }
+
+                // Spawn tile and check game over
+                const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, randomRef.current)
+                const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : m.gameStatus
+
+                return { ...m, tiles: tilesAfterSpawn, gameStatus: newGameStatus }
+            })
         })
     })
 
@@ -470,7 +477,18 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
         }
     }, [gridRef])
 
-    return { tiles, renderCounter, scoreDeltas, bestScore, gameStatus, resetGame, continueGame, setUpTestWin, setUpTestGameOver, setUpTestTiles }
+    return {
+        tiles: model.tiles,
+        scoreDeltas: model.scoreDeltas,
+        bestScore: model.bestScore,
+        gameStatus: model.gameStatus,
+        renderCounter,
+        resetGame,
+        continueGame,
+        setUpTestWin,
+        setUpTestGameOver,
+        setUpTestTiles
+    }
 }
 
 // ============================================
