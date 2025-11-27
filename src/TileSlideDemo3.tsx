@@ -266,14 +266,10 @@ function renderTile({
     return (
         <div key={key} className={animClass} style={style}>
             <div
+                className="w-full h-full rounded flex items-center relative overflow-hidden font-bold px-1"
                 style={{
-                    width: '100%',
-                    height: '100%',
                     backgroundColor: getTileColor(value),
                     color: getTileTextColor(value),
-                    borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
                     justifyContent: 'safe center',
                     fontSize:
                         value >= 10000
@@ -283,21 +279,9 @@ function renderTile({
                               : value >= 100
                                 ? '40px'
                                 : '55px',
-                    fontWeight: 'bold',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: '0 5px',
                 }}
             >
-                <span
-                    style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        width: '100%',
-                        textAlign: 'center',
-                    }}
-                >
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap w-full text-center">
                     {value}
                 </span>
             </div>
@@ -322,7 +306,7 @@ function renderTiles(tiles: Tiles) {
 
 function renderMergedTile(tile: Tile, state: MergedState, index: number) {
     return (
-        <div key={String(index)} style={{ display: 'contents' }}>
+        <div key={String(index)} className="contents">
             {renderTile({
                 from: state.from1,
                 to: tile.position,
@@ -391,51 +375,39 @@ function GameOverlay({
 }) {
     return (
         <div
+            className="absolute flex flex-col items-center justify-center rounded-lg"
             style={{
-                position: 'absolute',
                 inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
                 backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                borderRadius: '8px',
             }}
         >
             <div
+                className="flex flex-col items-center rounded-xl border-2"
                 style={{
                     backgroundColor: '#2d2d2d',
                     padding: '30px 40px',
-                    borderRadius: '12px',
-                    border: '2px solid #555',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
+                    borderColor: '#555',
                 }}
             >
                 <h2
+                    className="text-white mb-5"
                     style={{
-                        color: '#fff',
                         fontSize: '36px',
-                        marginBottom: '20px',
                         textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
                     }}
                 >
                     {title}
                 </h2>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="flex gap-2.5">
                     {buttons.map((button) => (
                         <button
                             key={button.label}
                             onClick={button.onClick}
+                            className="text-white border-none rounded cursor-pointer"
                             style={{
                                 padding: '10px 20px',
                                 fontSize: '18px',
                                 backgroundColor: '#8f7a66',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
                             }}
                         >
                             {button.label}
@@ -524,21 +496,16 @@ export function TileSlideDemo3() {
                     {ALL_POSITIONS.map((pos) => (
                         <div
                             key={`empty-${String(pos.row)}-${String(pos.col)}`}
+                            className="w-full h-full p-1 box-border"
                             style={{
                                 gridRow: pos.row + 1,
                                 gridColumn: pos.col + 1,
-                                width: '100%',
-                                height: '100%',
-                                padding: '5px',
-                                boxSizing: 'border-box',
                             }}
                         >
                             <div
+                                className="w-full h-full rounded"
                                 style={{
-                                    width: '100%',
-                                    height: '100%',
                                     backgroundColor: '#3d3d3d',
-                                    borderRadius: '4px',
                                 }}
                             />
                         </div>
