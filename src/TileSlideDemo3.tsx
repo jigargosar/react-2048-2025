@@ -484,7 +484,7 @@ export function TileSlideDemo3() {
                         key={renderCounter}
                         className="grid bg-neutral-800 rounded-lg aspect-square"
                         style={{
-                            grid: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
+                            grid: `repeat(${String(CONFIG.gridSize)}, 1fr) / repeat(${String(CONFIG.gridSize)}, 1fr)`,
                         }}
                     >
                         {ALL_POSITIONS.map((pos) => renderEmptyCell(pos))}
