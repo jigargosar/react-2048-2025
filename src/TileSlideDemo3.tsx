@@ -253,18 +253,12 @@ function renderTile({
     const style: TileStyle = {
         gridColumn: to.col + 1,
         gridRow: to.row + 1,
-        width: '100%',
-        height: '100%',
-        padding: '5px',
-        boxSizing: 'border-box',
-        minWidth: 0,
-        minHeight: 0,
         '--offset-x': `${String(offsetX)}%`,
         '--offset-y': `${String(offsetY)}%`,
     }
 
     return (
-        <div key={key} className={animClass} style={style}>
+        <div key={key} className={`${animClass} w-full h-full p-1 box-border min-w-0 min-h-0`} style={style}>
             <div
                 className="w-full h-full rounded flex items-center relative overflow-hidden font-bold px-1"
                 style={{
@@ -375,24 +369,15 @@ function GameOverlay({
 }) {
     return (
         <div
-            className="absolute flex flex-col items-center justify-center rounded-lg"
+            className="absolute flex flex-col items-center justify-center rounded-lg bg-black/80"
             style={{
                 inset: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
             }}
         >
-            <div
-                className="flex flex-col items-center rounded-xl border-2"
-                style={{
-                    backgroundColor: '#2d2d2d',
-                    padding: '30px 40px',
-                    borderColor: '#555',
-                }}
-            >
+            <div className="flex flex-col items-center rounded-xl border-2 py-8 px-10 bg-neutral-800 border-neutral-600">
                 <h2
-                    className="text-white mb-5"
+                    className="text-white mb-5 text-4xl"
                     style={{
-                        fontSize: '36px',
                         textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
                     }}
                 >
@@ -403,12 +388,7 @@ function GameOverlay({
                         <button
                             key={button.label}
                             onClick={button.onClick}
-                            className="text-white border-none rounded cursor-pointer"
-                            style={{
-                                padding: '10px 20px',
-                                fontSize: '18px',
-                                backgroundColor: '#8f7a66',
-                            }}
+                            className="text-white border-none rounded cursor-pointer py-2.5 px-5 text-lg bg-amber-700"
                         >
                             {button.label}
                         </button>
@@ -502,12 +482,7 @@ export function TileSlideDemo3() {
                                 gridColumn: pos.col + 1,
                             }}
                         >
-                            <div
-                                className="w-full h-full rounded"
-                                style={{
-                                    backgroundColor: '#3d3d3d',
-                                }}
-                            />
+                            <div className="w-full h-full rounded bg-neutral-700" />
                         </div>
                     ))}
                     {renderTiles(tiles)}
