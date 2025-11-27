@@ -527,9 +527,9 @@ function renderButton(label: string, onClick: () => void, primary = false) {
         <button
             onClick={onClick}
             className={cn(
-                'text-white rounded cursor-pointer',
+                'text-white text-base rounded cursor-pointer',
                 'py-2 px-4',
-                primary ? 'bg-amber-900 text-base' : 'bg-neutral-600 text-sm',
+                primary ? 'bg-amber-900' : 'bg-stone-600',
             )}
         >
             {label}
@@ -564,20 +564,9 @@ function GameOverlay({
             >
                 <h2 className={cn('text-white text-4xl', 'mb-5')}>{title}</h2>
                 <div className="flex gap-2.5">
-                    {buttons.map((button) => (
-                        <button
-                            key={button.label}
-                            onClick={button.onClick}
-                            className={cn(
-                                'text-white text-lg',
-                                'border-none rounded cursor-pointer',
-                                'bg-stone-600',
-                                'py-2.5 px-5',
-                            )}
-                        >
-                            {button.label}
-                        </button>
-                    ))}
+                    {buttons.map((button) =>
+                        renderButton(button.label, button.onClick),
+                    )}
                 </div>
             </div>
         </div>
