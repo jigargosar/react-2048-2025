@@ -364,27 +364,32 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
 }
 
 // Render functions - tiny building blocks
-function renderScorePanel(label: string, value: number, deltas?: ScoreDeltas) {
+function renderScore(label: string, value: number, deltas: ScoreDeltas) {
     return (
         <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
             <div className="text-neutral-400 text-sm uppercase">{label}</div>
-            {deltas ? (
-                <div className="grid">
-                    <div className="text-white text-2xl font-bold [grid-area:1/1]">
-                        {value}
-                    </div>
-                    {deltas.map((delta, index) => (
-                        <div
-                            key={index}
-                            className="score-pop-anim text-green-400 text-lg [grid-area:1/1]"
-                        >
-                            +{delta}
-                        </div>
-                    ))}
+            <div className="grid">
+                <div className="text-white text-2xl font-bold [grid-area:1/1]">
+                    {value}
                 </div>
-            ) : (
-                <div className="text-white text-2xl font-bold">{value}</div>
-            )}
+                {deltas.map((delta, index) => (
+                    <div
+                        key={index}
+                        className="score-pop-anim text-green-400 text-lg [grid-area:1/1]"
+                    >
+                        +{delta}
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+function renderBestScore(label: string, value: number) {
+    return (
+        <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+            <div className="text-neutral-400 text-sm uppercase">{label}</div>
+            <div className="text-white text-2xl font-bold">{value}</div>
         </div>
     )
 }
@@ -464,12 +469,15 @@ export function TileSlideDemo3() {
     const boardWidth = CONFIG.tileSizePx * CONFIG.gridSize
     return (
         <div className="min-h-screen bg-neutral-900 select-none flex flex-col justify-center py-8 items-center">
-            <div className="flex flex-col gap-5" style={{ width: `${String(boardWidth)}px` }}>
+            <div
+                className="flex flex-col gap-5"
+                style={{ width: `${String(boardWidth)}px` }}
+            >
                 {/* HEADER */}
                 <div className="flex justify-between items-center">
                     <div className="flex gap-3">
-                        {renderScorePanel('Score', score, scoreDeltas)}
-                        {renderScorePanel('Best', bestScore)}
+                        {renderScore('Score', score, scoreDeltas)}
+                        {renderBestScore('Best', bestScore)}
                     </div>
                     {renderButton('New Game', resetGame, true)}
                 </div>
@@ -498,7 +506,9 @@ export function TileSlideDemo3() {
                     {gameStatus === 'over' && (
                         <GameOverlay
                             title="Game Over"
-                            buttons={[{ label: 'New Game', onClick: resetGame }]}
+                            buttons={[
+                                { label: 'New Game', onClick: resetGame },
+                            ]}
                         />
                     )}
                 </div>
