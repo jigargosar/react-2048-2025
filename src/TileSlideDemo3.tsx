@@ -98,19 +98,19 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const continueGame = () => {
-        setModel((m) => continueGameModel(m))
+        setModel(continueGameModel)
     }
 
     const setUpTestWin = () => {
-        setModel((m) => createTestWinModel(m))
+        setModel(createTestWinModel)
     }
 
     const setUpTestGameOver = () => {
-        setModel((m) => createTestGameOverModel(m))
+        setModel(createTestGameOverModel)
     }
 
     const setUpTestTiles = () => {
-        setModel((m) => createAllTestTilesModel(m))
+        setModel(createAllTestTilesModel)
     }
 
     const onMove = useEffectEvent((direction: Direction) => {
@@ -487,7 +487,7 @@ export function TileSlideDemo3() {
                             grid: `repeat(${String(CONFIG.gridSize)}, 1fr) / repeat(${String(CONFIG.gridSize)}, 1fr)`,
                         }}
                     >
-                        {ALL_POSITIONS.map((pos) => renderEmptyCell(pos))}
+                        {ALL_POSITIONS.map(renderEmptyCell)}
                         {renderTiles(tiles)}
                     </div>
                     {gameStatus === 'won' && (
