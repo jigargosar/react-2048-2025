@@ -235,9 +235,21 @@ function getTileTextColor(value: number): string {
     return '#000000'
 }
 
+function getTileFontSize(value: number): string {
+    if (value >= 10000) return '20px'
+    if (value >= 1000) return '28px'
+    if (value >= 100) return '40px'
+    return '55px'
+}
+
 // Helper to suppress unused parameter warnings
 function makeUnusedParmaUsed<T>(x: T): T {
     return x
+}
+
+// View utilities
+function cn(...classes: string[]) {
+    return classes.join(' ')
 }
 
 // Tile rendering
@@ -262,25 +274,32 @@ function renderTile({
     return (
         <div
             key={key}
-            className={`${animClass} w-full h-full p-1 box-border min-w-0 min-h-0`}
+            className={cn(
+                animClass,
+                'w-full h-full min-w-0 min-h-0 box-border',
+                'p-1',
+            )}
             style={style}
         >
             <div
-                className="w-full h-full rounded flex items-center relative overflow-hidden font-bold px-1 justify-[safe_center]"
+                className={cn(
+                    'w-full h-full rounded',
+                    'flex items-center justify-[safe_center]',
+                    'relative overflow-hidden',
+                    'font-bold',
+                    'px-1',
+                )}
                 style={{
                     backgroundColor: getTileColor(value),
                     color: getTileTextColor(value),
-                    fontSize:
-                        value >= 10000
-                            ? '20px'
-                            : value >= 1000
-                              ? '28px'
-                              : value >= 100
-                                ? '40px'
-                                : '55px',
+                    fontSize: getTileFontSize(value),
                 }}
             >
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap w-full text-center">
+                <span className={cn(
+                    'w-full',
+                    'overflow-hidden text-ellipsis whitespace-nowrap',
+                    'text-center',
+                )}>
                     {value}
                 </span>
             </div>
