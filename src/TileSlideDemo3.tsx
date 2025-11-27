@@ -370,17 +370,13 @@ function renderScorePanel(label: string, value: number, deltas?: ScoreDeltas) {
             <div className="text-neutral-400 text-sm uppercase">{label}</div>
             {deltas ? (
                 <div className="grid">
-                    <div
-                        className="text-white text-2xl font-bold"
-                        style={{ gridArea: '1 / 1' }}
-                    >
+                    <div className="text-white text-2xl font-bold [grid-area:1/1]">
                         {value}
                     </div>
                     {deltas.map((delta, index) => (
                         <div
                             key={index}
-                            className="score-pop-anim text-green-400 text-lg"
-                            style={{ gridArea: '1 / 1' }}
+                            className="score-pop-anim text-green-400 text-lg [grid-area:1/1]"
                         >
                             +{delta}
                         </div>
