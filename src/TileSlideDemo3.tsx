@@ -11,6 +11,7 @@ import {
     createTestGameOverModel,
     createTestWinModel,
     type Direction,
+    type GameStatus,
     INITIAL_MODEL,
     type MergedState,
     type Model,
@@ -363,6 +364,77 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
     })
 }
 
+// Render functions - sections
+function renderHeader(
+    score: number,
+    scoreDeltas: ScoreDeltas,
+    bestScore: number,
+    resetGame: () => void,
+) {
+    return (
+        <div className="flex justify-between items-center">
+            <div className="flex gap-3">
+                {renderScore('Score', score, scoreDeltas)}
+                {renderBestScore('Best', bestScore)}
+            </div>
+            {renderButton('New Game', resetGame, true)}
+        </div>
+    )
+}
+
+function renderGameBoard(
+    renderCounter: number,
+    tiles: Tiles,
+    gameStatus: GameStatus,
+    continueGame: () => void,
+    resetGame: () => void,
+    gridRef: React.RefObject<HTMLDivElement | null>,
+) {
+    return (
+        <div ref={gridRef} className="relative touch-none">
+            <div
+                key={renderCounter}
+                className="grid bg-neutral-800 rounded-lg aspect-square"
+                style={{
+                    grid: `repeat(${String(CONFIG.gridSize)}, 1fr) / repeat(${String(CONFIG.gridSize)}, 1fr)`,
+                }}
+            >
+                {ALL_POSITIONS.map(renderEmptyCell)}
+                {renderTiles(tiles)}
+            </div>
+            {gameStatus === 'won' && (
+                <GameOverlay
+                    title="You Won!"
+                    buttons={[
+                        { label: 'Continue', onClick: continueGame },
+                        { label: 'New Game', onClick: resetGame },
+                    ]}
+                />
+            )}
+            {gameStatus === 'over' && (
+                <GameOverlay
+                    title="Game Over"
+                    buttons={[{ label: 'New Game', onClick: resetGame }]}
+                />
+            )}
+        </div>
+    )
+}
+
+function renderFooter(
+    setUpTestWin: () => void,
+    setUpTestGameOver: () => void,
+    setUpTestTiles: () => void,
+) {
+    return (
+        <div className="flex gap-2">
+            {renderButton('Test Win', setUpTestWin)}
+            {renderButton('Test Game Over', setUpTestGameOver)}
+            {renderButton('Test Tiles', setUpTestTiles)}
+        </div>
+    )
+}
+
 // Render functions - tiny building blocks
 function renderScore(label: string, value: number, deltas: ScoreDeltas) {
     return (
@@ -473,52 +545,9 @@ export function TileSlideDemo3() {
                 className="flex flex-col gap-5"
                 style={{ width: `${String(boardWidth)}px` }}
             >
-                {/* HEADER */}
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-3">
-                        {renderScore('Score', score, scoreDeltas)}
-                        {renderBestScore('Best', bestScore)}
-                    </div>
-                    {renderButton('New Game', resetGame, true)}
-                </div>
-
-                {/* GRID */}
-                <div ref={gridRef} className="relative touch-none">
-                    <div
-                        key={renderCounter}
-                        className="grid bg-neutral-800 rounded-lg aspect-square"
-                        style={{
-                            grid: `repeat(${String(CONFIG.gridSize)}, 1fr) / repeat(${String(CONFIG.gridSize)}, 1fr)`,
-                        }}
-                    >
-                        {ALL_POSITIONS.map(renderEmptyCell)}
-                        {renderTiles(tiles)}
-                    </div>
-                    {gameStatus === 'won' && (
-                        <GameOverlay
-                            title="You Won!"
-                            buttons={[
-                                { label: 'Continue', onClick: continueGame },
-                                { label: 'New Game', onClick: resetGame },
-                            ]}
-                        />
-                    )}
-                    {gameStatus === 'over' && (
-                        <GameOverlay
-                            title="Game Over"
-                            buttons={[
-                                { label: 'New Game', onClick: resetGame },
-                            ]}
-                        />
-                    )}
-                </div>
-
-                {/* FOOTER */}
-                <div className="flex gap-2">
-                    {renderButton('Test Win', setUpTestWin)}
-                    {renderButton('Test Game Over', setUpTestGameOver)}
-                    {renderButton('Test Tiles', setUpTestTiles)}
-                </div>
+                {renderHeader(score, scoreDeltas, bestScore, resetGame)}
+                {renderGameBoard(renderCounter, tiles, gameStatus, continueGame, resetGame, gridRef)}
+                {renderFooter(setUpTestWin, setUpTestGameOver, setUpTestTiles)}
             </div>
         </div>
     )
