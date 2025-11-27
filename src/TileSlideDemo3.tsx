@@ -11,12 +11,14 @@ import {
     createTestGameOverModel,
     createTestWinModel,
     type Direction,
+    type GameStatus,
     INITIAL_MODEL,
     type MergedState,
     type Model,
     type MovedState,
     type Position,
     prepareMove,
+    type ScoreDeltas,
     type SpawnedState,
     type StaticState,
     sumScoreDeltas,
@@ -358,6 +360,115 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
     })
 }
 
+// Render functions
+function renderScoreDisplay(score: number, scoreDeltas: ScoreDeltas, bestScore: number) {
+    return (
+        <div className="flex gap-3">
+            <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+                <div className="text-neutral-400 text-sm uppercase">
+                    Score
+                </div>
+                <div className="grid">
+                    <div
+                        className="text-white text-2xl font-bold"
+                        style={{ gridArea: '1 / 1' }}
+                    >
+                        {score}
+                    </div>
+                    {scoreDeltas.map((delta, index) => (
+                        <div
+                            key={index}
+                            className="score-pop-anim text-green-400 text-lg"
+                            style={{ gridArea: '1 / 1' }}
+                        >
+                            +{delta}
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+                <div className="text-neutral-400 text-sm uppercase">
+                    Best
+                </div>
+                <div className="text-white text-2xl font-bold">
+                    {bestScore}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function renderEmptyGridCells() {
+    return ALL_POSITIONS.map((pos) => (
+        <div
+            key={`empty-${String(pos.row)}-${String(pos.col)}`}
+            className="w-full h-full p-1 box-border"
+            style={{
+                gridRow: pos.row + 1,
+                gridColumn: pos.col + 1,
+            }}
+        >
+            <div className="w-full h-full rounded bg-neutral-700" />
+        </div>
+    ))
+}
+
+function renderGameStatusOverlay(
+    gameStatus: GameStatus,
+    continueGame: () => void,
+    resetGame: () => void
+) {
+    if (gameStatus === 'won') {
+        return (
+            <GameOverlay
+                title="You Won!"
+                buttons={[
+                    { label: 'Continue', onClick: continueGame },
+                    { label: 'New Game', onClick: resetGame },
+                ]}
+            />
+        )
+    }
+    if (gameStatus === 'over') {
+        return (
+            <GameOverlay
+                title="Game Over"
+                buttons={[{ label: 'New Game', onClick: resetGame }]}
+            />
+        )
+    }
+    return null
+}
+
+function renderTestButtons(
+    setUpTestWin: () => void,
+    setUpTestGameOver: () => void,
+    setUpTestTiles: () => void
+) {
+    return (
+        <div className="flex gap-2">
+            <button
+                onClick={setUpTestWin}
+                className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
+            >
+                Test Win
+            </button>
+            <button
+                onClick={setUpTestGameOver}
+                className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
+            >
+                Test Game Over
+            </button>
+            <button
+                onClick={setUpTestTiles}
+                className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
+            >
+                Test Tiles
+            </button>
+        </div>
+    )
+}
+
 // Components
 function GameOverlay({
     title,
@@ -412,38 +523,7 @@ export function TileSlideDemo3() {
                     width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
                 }}
             >
-                <div className="flex gap-3">
-                    <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
-                        <div className="text-neutral-400 text-sm uppercase">
-                            Score
-                        </div>
-                        <div className="grid">
-                            <div
-                                className="text-white text-2xl font-bold"
-                                style={{ gridArea: '1 / 1' }}
-                            >
-                                {score}
-                            </div>
-                            {scoreDeltas.map((delta, index) => (
-                                <div
-                                    key={index}
-                                    className="score-pop-anim text-green-400 text-lg"
-                                    style={{ gridArea: '1 / 1' }}
-                                >
-                                    +{delta}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
-                        <div className="text-neutral-400 text-sm uppercase">
-                            Best
-                        </div>
-                        <div className="text-white text-2xl font-bold">
-                            {bestScore}
-                        </div>
-                    </div>
-                </div>
+                {renderScoreDisplay(score, scoreDeltas, bestScore)}
                 <button
                     onClick={resetGame}
                     className="py-2 px-4 text-base bg-amber-900 text-white rounded cursor-pointer"
@@ -462,57 +542,13 @@ export function TileSlideDemo3() {
                         width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
                     }}
                 >
-                    {ALL_POSITIONS.map((pos) => (
-                        <div
-                            key={`empty-${String(pos.row)}-${String(pos.col)}`}
-                            className="w-full h-full p-1 box-border"
-                            style={{
-                                gridRow: pos.row + 1,
-                                gridColumn: pos.col + 1,
-                            }}
-                        >
-                            <div className="w-full h-full rounded bg-neutral-700" />
-                        </div>
-                    ))}
+                    {renderEmptyGridCells()}
                     {renderTiles(tiles)}
                 </div>
-                {gameStatus === 'won' && (
-                    <GameOverlay
-                        title="You Won!"
-                        buttons={[
-                            { label: 'Continue', onClick: continueGame },
-                            { label: 'New Game', onClick: resetGame },
-                        ]}
-                    />
-                )}
-                {gameStatus === 'over' && (
-                    <GameOverlay
-                        title="Game Over"
-                        buttons={[{ label: 'New Game', onClick: resetGame }]}
-                    />
-                )}
+                {renderGameStatusOverlay(gameStatus, continueGame, resetGame)}
             </div>
 
-            <div className="flex gap-2">
-                <button
-                    onClick={setUpTestWin}
-                    className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
-                >
-                    Test Win
-                </button>
-                <button
-                    onClick={setUpTestGameOver}
-                    className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
-                >
-                    Test Game Over
-                </button>
-                <button
-                    onClick={setUpTestTiles}
-                    className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
-                >
-                    Test Tiles
-                </button>
-            </div>
+            {renderTestButtons(setUpTestWin, setUpTestGameOver, setUpTestTiles)}
         </div>
     )
 }
