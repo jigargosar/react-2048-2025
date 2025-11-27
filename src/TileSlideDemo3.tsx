@@ -364,24 +364,20 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
     })
 }
 
-// Render functions
-function renderScoreDisplay(
-    score: number,
-    scoreDeltas: ScoreDeltas,
-    bestScore: number,
-) {
+// Render functions - tiny building blocks
+function renderScorePanel(label: string, value: number, deltas?: ScoreDeltas) {
     return (
-        <div className="flex gap-3">
-            <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
-                <div className="text-neutral-400 text-sm uppercase">Score</div>
+        <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+            <div className="text-neutral-400 text-sm uppercase">{label}</div>
+            {deltas ? (
                 <div className="grid">
                     <div
                         className="text-white text-2xl font-bold"
                         style={{ gridArea: '1 / 1' }}
                     >
-                        {score}
+                        {value}
                     </div>
-                    {scoreDeltas.map((delta, index) => (
+                    {deltas.map((delta, index) => (
                         <div
                             key={index}
                             className="score-pop-anim text-green-400 text-lg"
@@ -391,17 +387,15 @@ function renderScoreDisplay(
                         </div>
                     ))}
                 </div>
-            </div>
-            <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
-                <div className="text-neutral-400 text-sm uppercase">Best</div>
-                <div className="text-white text-2xl font-bold">{bestScore}</div>
-            </div>
+            ) : (
+                <div className="text-white text-2xl font-bold">{value}</div>
+            )}
         </div>
     )
 }
 
-function renderEmptyGridCells() {
-    return ALL_POSITIONS.map((pos) => (
+function renderEmptyCell(pos: Position) {
+    return (
         <div
             key={`empty-${String(pos.row)}-${String(pos.col)}`}
             className="w-full h-full p-1 box-border"
@@ -412,62 +406,19 @@ function renderEmptyGridCells() {
         >
             <div className="w-full h-full rounded bg-neutral-700" />
         </div>
-    ))
+    )
 }
 
-function renderGameStatusOverlay(
-    gameStatus: GameStatus,
-    continueGame: () => void,
-    resetGame: () => void,
-) {
-    if (gameStatus === 'won') {
-        return (
-            <GameOverlay
-                title="You Won!"
-                buttons={[
-                    { label: 'Continue', onClick: continueGame },
-                    { label: 'New Game', onClick: resetGame },
-                ]}
-            />
-        )
-    }
-    if (gameStatus === 'over') {
-        return (
-            <GameOverlay
-                title="Game Over"
-                buttons={[{ label: 'New Game', onClick: resetGame }]}
-            />
-        )
-    }
-    return null
-}
-
-function renderTestButtons(
-    setUpTestWin: () => void,
-    setUpTestGameOver: () => void,
-    setUpTestTiles: () => void,
-) {
+function renderButton(label: string, onClick: () => void, primary = false) {
     return (
-        <div className="flex gap-2">
-            <button
-                onClick={setUpTestWin}
-                className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
-            >
-                Test Win
-            </button>
-            <button
-                onClick={setUpTestGameOver}
-                className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
-            >
-                Test Game Over
-            </button>
-            <button
-                onClick={setUpTestTiles}
-                className="py-2 px-4 text-sm bg-neutral-600 text-white rounded cursor-pointer"
-            >
-                Test Tiles
-            </button>
-        </div>
+        <button
+            onClick={onClick}
+            className={`py-2 px-4 text-sm text-white rounded cursor-pointer ${
+                primary ? 'bg-amber-900 text-base' : 'bg-neutral-600'
+            }`}
+        >
+            {label}
+        </button>
     )
 }
 
@@ -517,21 +468,21 @@ export function TileSlideDemo3() {
 
     return (
         <div className="min-h-screen bg-neutral-900 select-none flex flex-col justify-center py-8 gap-5 items-center">
+            {/* HEADER */}
             <div
                 className="flex justify-between items-center"
                 style={{
                     width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
                 }}
             >
-                {renderScoreDisplay(score, scoreDeltas, bestScore)}
-                <button
-                    onClick={resetGame}
-                    className="py-2 px-4 text-base bg-amber-900 text-white rounded cursor-pointer"
-                >
-                    New Game
-                </button>
+                <div className="flex gap-3">
+                    {renderScorePanel('Score', score, scoreDeltas)}
+                    {renderScorePanel('Best', bestScore)}
+                </div>
+                {renderButton('New Game', resetGame, true)}
             </div>
 
+            {/* GRID */}
             <div ref={gridRef} className="relative touch-none">
                 <div
                     key={renderCounter}
@@ -542,13 +493,32 @@ export function TileSlideDemo3() {
                         width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
                     }}
                 >
-                    {renderEmptyGridCells()}
+                    {ALL_POSITIONS.map((pos) => renderEmptyCell(pos))}
                     {renderTiles(tiles)}
                 </div>
-                {renderGameStatusOverlay(gameStatus, continueGame, resetGame)}
+                {gameStatus === 'won' && (
+                    <GameOverlay
+                        title="You Won!"
+                        buttons={[
+                            { label: 'Continue', onClick: continueGame },
+                            { label: 'New Game', onClick: resetGame },
+                        ]}
+                    />
+                )}
+                {gameStatus === 'over' && (
+                    <GameOverlay
+                        title="Game Over"
+                        buttons={[{ label: 'New Game', onClick: resetGame }]}
+                    />
+                )}
             </div>
 
-            {renderTestButtons(setUpTestWin, setUpTestGameOver, setUpTestTiles)}
+            {/* FOOTER */}
+            <div className="flex gap-2">
+                {renderButton('Test Win', setUpTestWin)}
+                {renderButton('Test Game Over', setUpTestGameOver)}
+                {renderButton('Test Tiles', setUpTestTiles)}
+            </div>
         </div>
     )
 }
