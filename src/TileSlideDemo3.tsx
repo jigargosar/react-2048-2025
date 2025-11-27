@@ -363,7 +363,7 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const setUpTestTiles = () => {
-        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 99999, 999999, 9999999, 99999999]
+        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
         const tiles: Tiles = keepNonNil(
             values.map((value, index) => {
                 const position = ALL_POSITIONS[index]
@@ -635,24 +635,27 @@ function GameOverlay({
 
 function getTileColor(value: number): string {
     const colors: Record<number, string> = {
-        2: 'oklch(45% 0.14 0)',
-        4: 'oklch(45% 0.14 30)',
-        8: 'oklch(45% 0.14 60)',
-        16: 'oklch(45% 0.14 90)',
-        32: 'oklch(45% 0.14 120)',
-        64: 'oklch(45% 0.14 150)',
-        128: 'oklch(45% 0.14 180)',
-        256: 'oklch(45% 0.14 210)',
-        512: 'oklch(45% 0.14 240)',
-        1024: 'oklch(45% 0.14 270)',
-        2048: 'oklch(45% 0.14 300)',
-        4096: 'oklch(45% 0.14 330)',
+        2: '#3c3c3c',
+        4: '#4a4a4a',
+        8: '#8b7bd8',
+        16: '#7bb3d9',
+        32: '#7bd9c4',
+        64: '#a8d97b',
+        128: '#d9c77b',
+        256: '#d99a7b',
+        512: '#d97bb3',
+        1024: '#b37bd9',
+        2048: '#7b8bd9',
+        4096: '#d97b8b',
     }
     return colors[value] || '#000000'
 }
 
 function getTileTextColor(value: number): string {
-    return value <= 4 ? '#d4d4d4' : '#f9f6f2'
+    if (value <= 4) return '#e0e0e0'
+    if (value <= 512) return '#2a2a2a'
+    if (value <= 2048) return '#e0e0e0'
+    return '#000000'
 }
 
 type TileStyle = React.CSSProperties & {
