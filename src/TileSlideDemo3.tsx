@@ -377,7 +377,7 @@ function GameOverlay({
                         <button
                             key={button.label}
                             onClick={button.onClick}
-                            className="text-white border-none rounded cursor-pointer py-2.5 px-5 text-lg bg-amber-700"
+                            className="text-white border-none rounded cursor-pointer py-2.5 px-5 text-lg bg-stone-600"
                         >
                             {button.label}
                         </button>
@@ -446,7 +446,7 @@ export function TileSlideDemo3() {
                 </div>
                 <button
                     onClick={resetGame}
-                    className="py-2 px-4 text-base bg-amber-700 text-white rounded cursor-pointer"
+                    className="py-2 px-4 text-base bg-amber-900 text-white rounded cursor-pointer"
                 >
                     New Game
                 </button>
