@@ -321,6 +321,108 @@ const INITIAL_MODEL: Model = {
     bestScore: 0,
 }
 
+// Model update functions
+function continueGameModel(model: Model): Model {
+    if (model.gameStatus !== 'won') return model
+    return { ...model, gameStatus: 'continue' }
+}
+
+function createTestWinModel(model: Model): Model {
+    return {
+        ...model,
+        tiles: [
+            { value: 1024, position: { row: 0, col: 0 }, state: { type: 'static' } },
+            { value: 1024, position: { row: 0, col: 1 }, state: { type: 'static' } },
+        ],
+        gameStatus: 'playing',
+        scoreDeltas: [],
+    }
+}
+
+function createTestGameOverModel(model: Model): Model {
+    const tiles: Tiles = ALL_POSITIONS.map((position) => ({
+        value: (position.row + position.col) % 2 === 0 ? 2 : 4,
+        position,
+        state: { type: 'static' },
+    }))
+    return {
+        ...model,
+        tiles,
+        gameStatus: 'playing',
+        scoreDeltas: [],
+    }
+}
+
+function createAllTestTilesModel(model: Model): Model {
+    const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+    const tiles: Tiles = keepNonNil(
+        values.map((value, index) => {
+            const position = ALL_POSITIONS[index]
+            if (!position) return null
+            return {
+                value,
+                position,
+                state: { type: 'static' },
+            }
+        })
+    )
+    return {
+        ...model,
+        tiles,
+        gameStatus: 'playing',
+        scoreDeltas: [],
+    }
+}
+
+function setAllTilesToStatic(model: Model): Model {
+    return { ...model, tiles: model.tiles.map(setTileStateToStatic) }
+}
+
+function applyMoveResult(model: Model, direction: Direction, random: Random): Model {
+    const result = move(model.tiles, direction)
+
+    if (result.scoreDelta > 0) {
+        const newDeltas = [...model.scoreDeltas, result.scoreDelta]
+        const newScore = sumScoreDeltas(newDeltas)
+        const newBestScore = Math.max(model.bestScore, newScore)
+
+        // Check win first - no spawn on win
+        if (model.gameStatus === 'playing' && hasWon(result.tiles)) {
+            return {
+                ...model,
+                tiles: result.tiles,
+                scoreDeltas: newDeltas,
+                bestScore: newBestScore,
+                gameStatus: 'won',
+            }
+        }
+
+        // Spawn tile and check game over
+        const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, random)
+        const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : model.gameStatus
+
+        return {
+            ...model,
+            tiles: tilesAfterSpawn,
+            scoreDeltas: newDeltas,
+            bestScore: newBestScore,
+            gameStatus: newGameStatus,
+        }
+    }
+
+    // No score delta - check win/spawn anyway
+    // Check win first - no spawn on win
+    if (model.gameStatus === 'playing' && hasWon(result.tiles)) {
+        return { ...model, tiles: result.tiles, gameStatus: 'won' }
+    }
+
+    // Spawn tile and check game over
+    const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, random)
+    const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : model.gameStatus
+
+    return { ...model, tiles: tilesAfterSpawn, gameStatus: newGameStatus }
+}
+
 // ============================================
 // HOOK - State Management & Coordination
 // ============================================
@@ -358,89 +460,35 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const continueGame = () => {
-        if (model.gameStatus !== 'won') return
-        setModel({ ...model, gameStatus: 'continue' })
+        setModel(m => continueGameModel(m))
     }
 
     const setUpTestWin = () => {
-        const tiles: Tiles = [
-            { value: 1024, position: { row: 0, col: 0 }, state: { type: 'static' } },
-            { value: 1024, position: { row: 0, col: 1 }, state: { type: 'static' } },
-        ]
-        setModel({ tiles, gameStatus: 'playing', scoreDeltas: [], bestScore: model.bestScore })
+        setModel(m => createTestWinModel(m))
     }
 
     const setUpTestGameOver = () => {
-        const tiles: Tiles = ALL_POSITIONS.map((position) => ({
-            value: (position.row + position.col) % 2 === 0 ? 2 : 4,
-            position,
-            state: { type: 'static' },
-        }))
-        setModel({ tiles, gameStatus: 'playing', scoreDeltas: [], bestScore: model.bestScore })
+        setModel(m => createTestGameOverModel(m))
     }
 
     const setUpTestTiles = () => {
-        const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-        const tiles: Tiles = keepNonNil(
-            values.map((value, index) => {
-                const position = ALL_POSITIONS[index]
-                if (!position) return null
-                return {
-                    value,
-                    position,
-                    state: { type: 'static' },
-                }
-            })
-        )
-        setModel({ tiles, gameStatus: 'playing', scoreDeltas: [], bestScore: model.bestScore })
+        setModel(m => createAllTestTilesModel(m))
     }
 
     const onMove = useEffectEvent((direction: Direction) => {
         if (model.gameStatus === 'won' || model.gameStatus === 'over') return
 
-        const staticTiles = model.tiles.map(setTileStateToStatic)
-        setModel({ ...model, tiles: staticTiles })
+        setModel(setAllTilesToStatic)
         setRenderCounter(inc)
         requestAnimationFrame(() => {
-            const result = move(staticTiles, direction)
-            if (result.scoreDelta > 0) {
-                setModel((m) => {
-                    const newDeltas = [...m.scoreDeltas, result.scoreDelta]
-                    const newScore = sumScoreDeltas(newDeltas)
-                    const newBestScore = Math.max(m.bestScore, newScore)
-                    if (newBestScore > m.bestScore) {
-                        saveBestScore(newBestScore)
-                    }
-
-                    // Check win first - no spawn on win
-                    if (m.gameStatus === 'playing' && hasWon(result.tiles)) {
-                        return { ...m, tiles: result.tiles, scoreDeltas: newDeltas, bestScore: newBestScore, gameStatus: 'won' }
-                    }
-
-                    // Spawn tile and check game over
-                    const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, randomRef.current)
-                    const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : m.gameStatus
-
-                    return { ...m, tiles: tilesAfterSpawn, scoreDeltas: newDeltas, bestScore: newBestScore, gameStatus: newGameStatus }
-                })
-                return
-            }
-
-            // No score delta - check win/spawn anyway
-            setModel((m) => {
-                // Check win first - no spawn on win
-                if (m.gameStatus === 'playing' && hasWon(result.tiles)) {
-                    return { ...m, tiles: result.tiles, gameStatus: 'won' }
-                }
-
-                // Spawn tile and check game over
-                const tilesAfterSpawn = spawnRandomTiles(result.tiles, CONFIG.tilesToSpawnPerMove, randomRef.current)
-                const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : m.gameStatus
-
-                return { ...m, tiles: tilesAfterSpawn, gameStatus: newGameStatus }
-            })
+            setModel((m) => applyMoveResult(m, direction, randomRef.current))
         })
     })
+
+    // Side effect: persist bestScore to localStorage
+    useEffect(() => {
+        saveBestScore(model.bestScore)
+    }, [model.bestScore])
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
