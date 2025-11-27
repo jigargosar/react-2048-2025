@@ -260,7 +260,11 @@ function renderTile({
     }
 
     return (
-        <div key={key} className={`${animClass} w-full h-full p-1 box-border min-w-0 min-h-0`} style={style}>
+        <div
+            key={key}
+            className={`${animClass} w-full h-full p-1 box-border min-w-0 min-h-0`}
+            style={style}
+        >
             <div
                 className="w-full h-full rounded flex items-center relative overflow-hidden font-bold px-1 justify-[safe_center]"
                 style={{
@@ -361,13 +365,15 @@ function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
 }
 
 // Render functions
-function renderScoreDisplay(score: number, scoreDeltas: ScoreDeltas, bestScore: number) {
+function renderScoreDisplay(
+    score: number,
+    scoreDeltas: ScoreDeltas,
+    bestScore: number,
+) {
     return (
         <div className="flex gap-3">
             <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
-                <div className="text-neutral-400 text-sm uppercase">
-                    Score
-                </div>
+                <div className="text-neutral-400 text-sm uppercase">Score</div>
                 <div className="grid">
                     <div
                         className="text-white text-2xl font-bold"
@@ -387,12 +393,8 @@ function renderScoreDisplay(score: number, scoreDeltas: ScoreDeltas, bestScore: 
                 </div>
             </div>
             <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
-                <div className="text-neutral-400 text-sm uppercase">
-                    Best
-                </div>
-                <div className="text-white text-2xl font-bold">
-                    {bestScore}
-                </div>
+                <div className="text-neutral-400 text-sm uppercase">Best</div>
+                <div className="text-white text-2xl font-bold">{bestScore}</div>
             </div>
         </div>
     )
@@ -416,7 +418,7 @@ function renderEmptyGridCells() {
 function renderGameStatusOverlay(
     gameStatus: GameStatus,
     continueGame: () => void,
-    resetGame: () => void
+    resetGame: () => void,
 ) {
     if (gameStatus === 'won') {
         return (
@@ -443,7 +445,7 @@ function renderGameStatusOverlay(
 function renderTestButtons(
     setUpTestWin: () => void,
     setUpTestGameOver: () => void,
-    setUpTestTiles: () => void
+    setUpTestTiles: () => void,
 ) {
     return (
         <div className="flex gap-2">
@@ -480,9 +482,7 @@ function GameOverlay({
     return (
         <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/80">
             <div className="flex flex-col items-center rounded-xl border-2 py-8 px-10 bg-neutral-800 border-neutral-600">
-                <h2 className="text-white mb-5 text-4xl">
-                    {title}
-                </h2>
+                <h2 className="text-white mb-5 text-4xl">{title}</h2>
                 <div className="flex gap-2.5">
                     {buttons.map((button) => (
                         <button
