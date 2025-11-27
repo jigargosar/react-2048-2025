@@ -11,7 +11,6 @@ import {
     createTestGameOverModel,
     createTestWinModel,
     type Direction,
-    type GameStatus,
     INITIAL_MODEL,
     type MergedState,
     type Model,
@@ -466,58 +465,54 @@ export function TileSlideDemo3() {
     } = useTileSlide(gridRef)
     const score = sumScoreDeltas(scoreDeltas)
 
+    const boardWidth = CONFIG.tileSizePx * CONFIG.gridSize
     return (
-        <div className="min-h-screen bg-neutral-900 select-none flex flex-col justify-center py-8 gap-5 items-center">
-            {/* HEADER */}
-            <div
-                className="flex justify-between items-center"
-                style={{
-                    width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
-                }}
-            >
-                <div className="flex gap-3">
-                    {renderScorePanel('Score', score, scoreDeltas)}
-                    {renderScorePanel('Best', bestScore)}
+        <div className="min-h-screen bg-neutral-900 select-none flex flex-col justify-center py-8 items-center">
+            <div className="flex flex-col gap-5" style={{ width: `${String(boardWidth)}px` }}>
+                {/* HEADER */}
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-3">
+                        {renderScorePanel('Score', score, scoreDeltas)}
+                        {renderScorePanel('Best', bestScore)}
+                    </div>
+                    {renderButton('New Game', resetGame, true)}
                 </div>
-                {renderButton('New Game', resetGame, true)}
-            </div>
 
-            {/* GRID */}
-            <div ref={gridRef} className="relative touch-none">
-                <div
-                    key={renderCounter}
-                    className="grid bg-neutral-800 rounded-lg aspect-square"
-                    style={{
-                        gridTemplateColumns: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
-                        gridTemplateRows: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
-                        width: `${String(CONFIG.tileSizePx * CONFIG.gridSize)}px`,
-                    }}
-                >
-                    {ALL_POSITIONS.map((pos) => renderEmptyCell(pos))}
-                    {renderTiles(tiles)}
+                {/* GRID */}
+                <div ref={gridRef} className="relative touch-none">
+                    <div
+                        key={renderCounter}
+                        className="grid bg-neutral-800 rounded-lg aspect-square"
+                        style={{
+                            grid: `repeat(${String(CONFIG.gridSize)}, 1fr)`,
+                        }}
+                    >
+                        {ALL_POSITIONS.map((pos) => renderEmptyCell(pos))}
+                        {renderTiles(tiles)}
+                    </div>
+                    {gameStatus === 'won' && (
+                        <GameOverlay
+                            title="You Won!"
+                            buttons={[
+                                { label: 'Continue', onClick: continueGame },
+                                { label: 'New Game', onClick: resetGame },
+                            ]}
+                        />
+                    )}
+                    {gameStatus === 'over' && (
+                        <GameOverlay
+                            title="Game Over"
+                            buttons={[{ label: 'New Game', onClick: resetGame }]}
+                        />
+                    )}
                 </div>
-                {gameStatus === 'won' && (
-                    <GameOverlay
-                        title="You Won!"
-                        buttons={[
-                            { label: 'Continue', onClick: continueGame },
-                            { label: 'New Game', onClick: resetGame },
-                        ]}
-                    />
-                )}
-                {gameStatus === 'over' && (
-                    <GameOverlay
-                        title="Game Over"
-                        buttons={[{ label: 'New Game', onClick: resetGame }]}
-                    />
-                )}
-            </div>
 
-            {/* FOOTER */}
-            <div className="flex gap-2">
-                {renderButton('Test Win', setUpTestWin)}
-                {renderButton('Test Game Over', setUpTestGameOver)}
-                {renderButton('Test Tiles', setUpTestTiles)}
+                {/* FOOTER */}
+                <div className="flex gap-2">
+                    {renderButton('Test Win', setUpTestWin)}
+                    {renderButton('Test Game Over', setUpTestGameOver)}
+                    {renderButton('Test Tiles', setUpTestTiles)}
+                </div>
             </div>
         </div>
     )
