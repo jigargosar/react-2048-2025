@@ -295,11 +295,13 @@ function renderTile({
                     fontSize: getTileFontSize(value),
                 }}
             >
-                <span className={cn(
-                    'w-full',
-                    'overflow-hidden text-ellipsis whitespace-nowrap',
-                    'text-center',
-                )}>
+                <span
+                    className={cn(
+                        'w-full',
+                        'overflow-hidden text-ellipsis whitespace-nowrap',
+                        'text-center',
+                    )}
+                >
                     {value}
                 </span>
             </div>
@@ -409,14 +411,13 @@ function renderGameBoard(
     resetGame: () => void,
     gridRef: React.RefObject<HTMLDivElement | null>,
 ) {
+    const gridStyleValue = `repeat(${String(CONFIG.gridSize)}, 1fr) / repeat(${String(CONFIG.gridSize)}, 1fr)`
     return (
         <div ref={gridRef} className="relative touch-none">
             <div
                 key={renderCounter}
                 className="grid bg-neutral-800 rounded-lg aspect-square"
-                style={{
-                    grid: `repeat(${String(CONFIG.gridSize)}, 1fr) / repeat(${String(CONFIG.gridSize)}, 1fr)`,
-                }}
+                style={{ grid: gridStyleValue }}
             >
                 {ALL_POSITIONS.map(renderEmptyCell)}
                 {renderTiles(tiles)}
@@ -457,16 +458,31 @@ function renderFooter(
 // Render functions - tiny building blocks
 function renderScore(label: string, value: number, deltas: ScoreDeltas) {
     return (
-        <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+        <div
+            className={cn(
+                'flex flex-col items-center',
+                'bg-neutral-700 rounded',
+                'px-4 py-2',
+            )}
+        >
             <div className="text-neutral-400 text-sm uppercase">{label}</div>
             <div className="grid">
-                <div className="text-white text-2xl font-bold [grid-area:1/1]">
+                <div
+                    className={cn(
+                        'text-white text-2xl font-bold',
+                        '[grid-area:1/1]',
+                    )}
+                >
                     {value}
                 </div>
                 {deltas.map((delta, index) => (
                     <div
                         key={index}
-                        className="score-pop-anim text-green-400 text-lg [grid-area:1/1]"
+                        className={cn(
+                            'score-pop-anim',
+                            'text-green-400 text-lg',
+                            '[grid-area:1/1]',
+                        )}
                     >
                         +{delta}
                     </div>
@@ -478,7 +494,13 @@ function renderScore(label: string, value: number, deltas: ScoreDeltas) {
 
 function renderBestScore(label: string, value: number) {
     return (
-        <div className="flex flex-col items-center bg-neutral-700 rounded px-4 py-2">
+        <div
+            className={cn(
+                'flex flex-col items-center',
+                'bg-neutral-700 rounded',
+                'px-4 py-2',
+            )}
+        >
             <div className="text-neutral-400 text-sm uppercase">{label}</div>
             <div className="text-white text-2xl font-bold">{value}</div>
         </div>
@@ -504,9 +526,11 @@ function renderButton(label: string, onClick: () => void, primary = false) {
     return (
         <button
             onClick={onClick}
-            className={`py-2 px-4 text-sm text-white rounded cursor-pointer ${
-                primary ? 'bg-amber-900 text-base' : 'bg-neutral-600'
-            }`}
+            className={cn(
+                'text-white rounded cursor-pointer',
+                'py-2 px-4',
+                primary ? 'bg-amber-900 text-base' : 'bg-neutral-600 text-sm',
+            )}
         >
             {label}
         </button>
@@ -522,15 +546,34 @@ function GameOverlay({
     buttons: OverlayButton[]
 }) {
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/80">
-            <div className="flex flex-col items-center rounded-xl border-2 py-8 px-10 bg-neutral-800 border-neutral-600">
-                <h2 className="text-white mb-5 text-4xl">{title}</h2>
+        <div
+            className={cn(
+                'absolute inset-0',
+                'flex flex-col items-center justify-center',
+                'rounded-lg',
+                'bg-black/80',
+            )}
+        >
+            <div
+                className={cn(
+                    'flex flex-col items-center',
+                    'rounded-xl border-2 border-neutral-600',
+                    'bg-neutral-800',
+                    'py-8 px-10',
+                )}
+            >
+                <h2 className={cn('text-white text-4xl', 'mb-5')}>{title}</h2>
                 <div className="flex gap-2.5">
                     {buttons.map((button) => (
                         <button
                             key={button.label}
                             onClick={button.onClick}
-                            className="text-white border-none rounded cursor-pointer py-2.5 px-5 text-lg bg-stone-600"
+                            className={cn(
+                                'text-white text-lg',
+                                'border-none rounded cursor-pointer',
+                                'bg-stone-600',
+                                'py-2.5 px-5',
+                            )}
                         >
                             {button.label}
                         </button>
@@ -559,13 +602,26 @@ export function TileSlideDemo3() {
 
     const boardWidth = CONFIG.tileSizePx * CONFIG.gridSize
     return (
-        <div className="min-h-screen bg-neutral-900 select-none flex flex-col justify-center py-8 items-center">
+        <div
+            className={cn(
+                'min-h-screen bg-neutral-900 select-none',
+                'flex flex-col justify-center items-center',
+                'py-8',
+            )}
+        >
             <div
                 className="flex flex-col gap-5"
                 style={{ width: `${String(boardWidth)}px` }}
             >
                 {renderHeader(score, scoreDeltas, bestScore, resetGame)}
-                {renderGameBoard(renderCounter, tiles, gameStatus, continueGame, resetGame, gridRef)}
+                {renderGameBoard(
+                    renderCounter,
+                    tiles,
+                    gameStatus,
+                    continueGame,
+                    resetGame,
+                    gridRef,
+                )}
                 {renderFooter(setUpTestWin, setUpTestGameOver, setUpTestTiles)}
             </div>
         </div>
