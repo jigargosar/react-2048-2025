@@ -308,6 +308,8 @@ type Model = {
     bestScore: number
 }
 
+type MaybeModel = Model | null
+
 const INITIAL_MODEL: Model = {
     tiles: [
         { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
@@ -374,11 +376,17 @@ function createAllTestTilesModel(model: Model): Model {
     }
 }
 
-function setAllTilesToStatic(model: Model): Model {
+function prepareMove(model: Model): MaybeModel {
+    if (model.gameStatus === 'won' || model.gameStatus === 'over') {
+        return null
+    }
     return { ...model, tiles: model.tiles.map(setTileStateToStatic) }
 }
 
-function applyMoveResult(model: Model, direction: Direction, random: Random): Model {
+function applyMove(model: Model, direction: Direction, random: Random): MaybeModel {
+    if (model.gameStatus === 'won' || model.gameStatus === 'over') {
+        return null
+    }
     const result = move(model.tiles, direction)
 
     if (result.scoreDelta > 0) {
@@ -476,12 +484,17 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
     }
 
     const onMove = useEffectEvent((direction: Direction) => {
-        if (model.gameStatus === 'won' || model.gameStatus === 'over') return
+        const prepared = prepareMove(model)
 
-        setModel(setAllTilesToStatic)
+        if (!prepared) return
+
+        setModel(prepared)
         setRenderCounter(inc)
         requestAnimationFrame(() => {
-            setModel((m) => applyMoveResult(m, direction, randomRef.current))
+            setModel((m) => {
+                const result = applyMove(m, direction, randomRef.current)
+                return result ?? m
+            })
         })
     })
 
