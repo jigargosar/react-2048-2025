@@ -573,7 +573,7 @@ function GameOverlay({
     )
 }
 
-export function TileSlideDemo3() {
+export function App() {
     const gridRef = useRef<HTMLDivElement>(null)
     const {
         tiles,
