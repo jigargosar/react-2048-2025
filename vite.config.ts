@@ -5,6 +5,7 @@ import eslint from 'vite-plugin-eslint2'
 
 // https://vite.dev/config/
 export default defineConfig({
+    base: '/react-2048-2025/',
     plugins: [
         react({
             babel: {
