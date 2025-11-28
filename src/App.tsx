@@ -212,8 +212,8 @@ type OverlayButton = { label: string; onClick: () => void }
 // Theme utilities
 function getTileColor(value: number): string {
     const colors: Record<number, string> = {
-        2: '#3c3c3c',
-        4: '#4a4a4a',
+        2: '#4a4a5a',
+        4: '#5a5a4a',
         8: '#8b7bd8',
         16: '#7bb3d9',
         32: '#7bd9c4',
