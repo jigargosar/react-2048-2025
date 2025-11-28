@@ -116,13 +116,9 @@ function setPositionsFromMatrix(matrix: MatrixMaybeTile): MatrixMaybeTile {
 // Slide and merge logic
 function slideAndMergeRowLeft(row: MaybeTiles): MaybeTiles {
     // Filter non-null tiles and keep their original indices
-    const nonNullTiles: Array<{ tile: Tile; originalIndex: number }> = []
-    for (let i = 0; i < row.length; i++) {
-        const tile = row[i]
-        if (tile != null) {
-            nonNullTiles.push({ tile, originalIndex: i })
-        }
-    }
+    const nonNullTiles = keepNonNil(
+        row.map((tile, i) => (tile != null ? { tile, originalIndex: i } : null)),
+    )
 
     // Not using MaybeTiles - needs mutable array during construction
     const result: MaybeTile[] = repeat(null, CONFIG.gridSize)
