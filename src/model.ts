@@ -231,8 +231,6 @@ function hasWon(tiles: Tiles): boolean {
 }
 
 function isGameOver(tiles: Tiles): boolean {
-    if (tiles.length < CONFIG.gridSize * CONFIG.gridSize) return false
-
     const directions: Array<[number, number]> = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     const matrix = tilesToMatrix(tiles)
 
