@@ -1,22 +1,50 @@
 # Claude Instructions Summary
 
+## Communication Style
+
+- Always Use numbered prefixes (1., 2., 3.) for all lists, never bullet points (-).
+- When presenting options or asking user to choose, always provide recommendation.
+
+- Example (wrong - uses bullets):
+
+```md
+Analysis of options:
+
+- First approach
+- Second approach
+- Third approach
+
+Recommendation: Option 2
+```
+
+- Example (correct - uses numbered prefixes):
+
+```md
+Analysis of options:
+
+1. First approach
+2. Second approach
+3. Third approach
+
+Recommendation: Option 2
+```
+
 ## foo
+
 - Always present implementation plan for approval before implementing
-- Use numbered/lettered prefixes with proper formatting when presenting options
 - Only do what's explicitly asked, nothing more/less - discuss additional work first
 - Don't keep jumping to implementation without thinking through the design first
 - If 2-3 solutions rejected, ask user to share their approach:
-  > "It seems like you have a specific approach in mind. Could you share the solution you might be thinking of? That would be more efficient than me continuing to guess."
+    > "It seems like you have a specific approach in mind. Could you share the solution you might be thinking of? That would be more efficient than me continuing to guess."
 - Be concise but complete, not super verbose
 - Don't present silly/obviously wrong answers
-- Always present recommended solution
 - When asked to "add todo:" just add it, no discussion needed - focus on current discussion
-- when presenting options/solutions always give recommendation
 - if my request is incorrect, can't be fulfilled don't proceed ahead without explicit confirmation
 - Always get approval before implementing; deviations from agreed plans require explicit discussion and permission
 - If I am straying off path, not focusing on core problem, getting finicky about anything, remind me of this instruction. I rather work on main objectives and keep the fluff, going down the rabbit hole, unable to pick between two solution when both are equally bad/good. Unnecessary perfection is dangerous. There is almost always time to come back and fix things, but more likely we won't have to come back. Ensure you do it as politely as you can. And not annoy be by continuously pointing it out. Give me some breathing room, then you can remark again. I won't tolerate you interfering with this reminder everytime.
 
 ## General Instructions
+
 - Workflow: Always prefer editing existing files over creating new ones
 - Code Quality: Make impossible states impossible (ISI) for data models
 - Code Quality: Default design must always focus on Single Source of Truth
@@ -44,25 +72,30 @@
 - Design: When designing, avoid margin, and prefer padding. especially for vertical alignment. It's ok to use margin auto for centering horizontally
 
 ## Git
+
 - Never use `-A` or `.` to stage files, always use explicit file names - never blanket add
 - Don't add Claude promotions to commits, just use "Committed by Claude"
 - When processing commit request with multiple commands (diff, status, etc.), prefer chaining with `&&`
 - When pushing git commits to remote repository, ALWAYS use `git push --follow-tags` - NEVER use `git push` alone
 
 ## GitHub
+
 - For GitHub username/repo: use git remote; if not found, ask user
 - For GitHub Pages: use native actions/deploy-pages + configure via gh CLI API
 
 ## Chezmoi
+
 - `chezmoi git` commands options need double hyphen, otherwise chezmoi will pick it up and cause errors
 
 ## Package Publishing
+
 - When user asks to publish: discuss and recommend semver level (patch/minor/major)
 - Never assume what semver to use, always double check
 - Run `npm version [level] && git push --tags`
 - NEVER run `npm publish`, unless explicitly asked
 
 ## Elm
+
 - Always check compilation with exactly this command `elm make <file> --output=NUL`. Don't invent your own.
 - Never use `--output=elm.js` or similar - we only want to verify compilation, not create artifacts
 - In Elm, when needed, try using multiple class attributes, to group semantic classes together, so it's easy to read and also not having to read a long list of classes.
