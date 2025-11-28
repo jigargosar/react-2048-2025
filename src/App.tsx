@@ -4,7 +4,7 @@ import { inc } from 'ramda'
 import { createSeededRandom } from './utils.ts'
 import {
     ALL_POSITIONS,
-    applyMove,
+    move,
     CONFIG,
     continueGameModel,
     createAllTestTilesModel,
@@ -123,7 +123,7 @@ function useTileSlide(gridRef: React.RefObject<HTMLDivElement | null>) {
         setRenderCounter(inc)
         requestAnimationFrame(() => {
             setModel((m) => {
-                const result = applyMove(m, direction, randomRef.current)
+                const result = move(m, direction, randomRef.current)
                 return result ?? m
             })
         })

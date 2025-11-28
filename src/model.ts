@@ -47,8 +47,6 @@ type MaybeTiles = readonly MaybeTile[]
 type MatrixMaybeTile = Matrix<MaybeTile>
 export type ScoreDeltas = readonly number[]
 export type Random = () => number
-type MoveResult = { tiles: Tiles; scoreDelta: number }
-type MaybeMoveResult = MoveResult | null
 
 // Model-only constants
 const POSITION_MATRIX: Matrix<Position> = times(
@@ -255,17 +253,6 @@ function isGameOver(tiles: Tiles): boolean {
     return !canMove(tiles)
 }
 
-// Main move function
-function move(tiles: Tiles, direction: Direction): MaybeMoveResult {
-    const movedTiles = slideAndMergeTiles(tiles, direction)
-    const allStatic = movedTiles.every((t) => t.state.type === 'static')
-    if (allStatic) return null
-
-    const scoreDelta = computeScoreDelta(movedTiles)
-    return { tiles: movedTiles, scoreDelta }
-}
-
-
 // Model state type
 export type GameStatus = 'playing' | 'won' | 'continue' | 'over'
 
@@ -359,7 +346,7 @@ export function prepareMove(model: Model): MaybeModel {
     return { ...model, tiles: model.tiles.map(setTileStateToStatic) }
 }
 
-export function applyMove(
+export function move(
     model: Model,
     direction: Direction,
     random: Random,
@@ -368,24 +355,22 @@ export function applyMove(
         return null
     }
 
-    const result = move(model.tiles, direction)
-    if (result === null) {
+    const movedTiles = slideAndMergeTiles(model.tiles, direction)
+    const allStatic = movedTiles.every((t) => t.state.type === 'static')
+    if (allStatic) {
         return null
     }
 
-    // Update score if there was a merge
-    const newDeltas =
-        result.scoreDelta > 0
-            ? [...model.scoreDeltas, result.scoreDelta]
-            : model.scoreDeltas
+    const scoreDelta = computeScoreDelta(movedTiles)
+    const newDeltas = [...model.scoreDeltas, scoreDelta]
     const newScore = sumScoreDeltas(newDeltas)
     const newBestScore = Math.max(model.bestScore, newScore)
 
     // Check win first - no spawn on win
-    if (model.gameStatus === 'playing' && hasWon(result.tiles)) {
+    if (model.gameStatus === 'playing' && hasWon(movedTiles)) {
         return {
             ...model,
-            tiles: result.tiles,
+            tiles: movedTiles,
             scoreDeltas: newDeltas,
             bestScore: newBestScore,
             gameStatus: 'won',
@@ -394,7 +379,7 @@ export function applyMove(
 
     // Spawn tile and check game over
     const tilesAfterSpawn = spawnRandomTiles(
-        result.tiles,
+        movedTiles,
         CONFIG.tilesToSpawnPerMove,
         random,
     )
