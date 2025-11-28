@@ -30,7 +30,7 @@ export type Tiles = readonly Tile[]
 export const CONFIG = {
     gridSize: 4,
     tileSizePx: 100,
-    tilesToSpawnPerMove: 1,
+    tilesToSpawnPerMove: 2,
     winValue: 2048,
     minSwipeDetectDistancePx: 30,
     localStorageBestScoreKey: 'bestScore',
@@ -348,7 +348,6 @@ export function move(
     const movedTiles = slideAndMergeTiles(model.tiles, direction)
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
     if (allStatic) {
-        // No tiles moved - check if game is over
         if (noMovesLeft(model.tiles)) {
             return {
                 ...model,
