@@ -230,11 +230,11 @@ function hasWon(tiles: Tiles): boolean {
     return tiles.some((t) => t.value >= CONFIG.winValue)
 }
 
-function canMove(tiles: Tiles): boolean {
-    // Has empty cell
-    if (tiles.length < CONFIG.gridSize * CONFIG.gridSize) return true
+function isGameOver(tiles: Tiles): boolean {
+    // Has empty cell - game not over
+    if (tiles.length < CONFIG.gridSize * CONFIG.gridSize) return false
 
-    // Has adjacent matching tiles
+    // Has adjacent matching tiles - game not over
     const matrix = tilesToMatrix(tiles)
     for (let row = 0; row < CONFIG.gridSize; row++) {
         for (let col = 0; col < CONFIG.gridSize; col++) {
@@ -242,15 +242,11 @@ function canMove(tiles: Tiles): boolean {
             if (!tile) continue
             const right = matrix[row]?.[col + 1]
             const down = matrix[row + 1]?.[col]
-            if (right && right.value === tile.value) return true
-            if (down && down.value === tile.value) return true
+            if (right && right.value === tile.value) return false
+            if (down && down.value === tile.value) return false
         }
     }
-    return false
-}
-
-function isGameOver(tiles: Tiles): boolean {
-    return !canMove(tiles)
+    return true
 }
 
 // Model state type
@@ -358,6 +354,13 @@ export function move(
     const movedTiles = slideAndMergeTiles(model.tiles, direction)
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
     if (allStatic) {
+        // No tiles moved - check if game is over
+        if (isGameOver(model.tiles)) {
+            return {
+                ...model,
+                gameStatus: 'over',
+            }
+        }
         return null
     }
 
