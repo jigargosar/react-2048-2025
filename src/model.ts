@@ -225,7 +225,7 @@ export function sumScoreDeltas(deltas: ScoreDeltas): number {
     return deltas.reduce((a, b) => a + b, 0)
 }
 
-function hasWon(tiles: Tiles): boolean {
+function hasWinningTile(tiles: Tiles): boolean {
     return tiles.some((t) => t.value >= CONFIG.winValue)
 }
 
@@ -330,7 +330,7 @@ export function createAllTestTilesModel(model: Model): Model {
 }
 
 export function prepareMove(model: Model): MaybeModel {
-    if (model.gameStatus === 'won' || model.gameStatus === 'over') {
+    if (['won', 'over'].includes(model.gameStatus)) {
         return null
     }
     return { ...model, tiles: model.tiles.map(setTileStateToStatic) }
@@ -341,7 +341,7 @@ export function move(
     direction: Direction,
     random: Random,
 ): MaybeModel {
-    if (model.gameStatus === 'won' || model.gameStatus === 'over') {
+    if (['won', 'over'].includes(model.gameStatus)) {
         return null
     }
 
@@ -363,7 +363,7 @@ export function move(
     const newBestScore = Math.max(model.bestScore, newScore)
 
     // Check win first - no spawn on win
-    if (model.gameStatus === 'playing' && hasWon(movedTiles)) {
+    if (model.gameStatus === 'playing' && hasWinningTile(movedTiles)) {
         return {
             ...model,
             tiles: movedTiles,
