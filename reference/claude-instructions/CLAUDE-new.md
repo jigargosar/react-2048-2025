@@ -29,7 +29,7 @@ Analysis of options:
 Recommendation: Option 2
 ```
 
-## foo
+## Workflow Guidelines
 
 - Always present implementation plan for approval before implementing
 - Only do what's explicitly asked, nothing more/less - discuss additional work first
