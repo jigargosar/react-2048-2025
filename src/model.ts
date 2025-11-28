@@ -196,11 +196,15 @@ function getEmptyPositions(tiles: Tiles): Positions {
     return ALL_POSITIONS.filter((p) => matrix[p.row]?.[p.col] === null)
 }
 
-function spawnRandomTiles(tiles: Tiles, count: number, random: Random): Tiles {
+function spawnRandomTiles(tiles: Tiles, random: Random): Tiles {
     let emptyPositions = getEmptyPositions(tiles)
     const newTiles = [...tiles]
 
-    for (let i = 0; i < count && emptyPositions.length > 0; i++) {
+    for (
+        let i = 0;
+        i < CONFIG.tilesToSpawnPerMove && emptyPositions.length > 0;
+        i++
+    ) {
         const randomIndex = Math.floor(random() * emptyPositions.length)
         const position = emptyPositions[randomIndex]
         if (position) {
@@ -230,12 +234,17 @@ function hasWinningTile(tiles: Tiles): boolean {
 }
 
 function noMovesLeft(tiles: Tiles): boolean {
-    const directions: Array<[number, number]> = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+    const directions: Array<[number, number]> = [
+        [0, 1],
+        [1, 0],
+        [0, -1],
+        [-1, 0],
+    ]
     const matrix = tilesToMatrix(tiles)
 
     const hasNoMatchingNeighbor = ({ position: { row, col }, value }: Tile) => {
-        const hasMatch = directions.some(([dr, dc]) =>
-            matrix[row + dr]?.[col + dc]?.value === value
+        const hasMatch = directions.some(
+            ([dr, dc]) => matrix[row + dr]?.[col + dc]?.value === value,
         )
         return !hasMatch
     }
@@ -336,6 +345,10 @@ export function prepareMove(model: Model): MaybeModel {
     return { ...model, tiles: model.tiles.map(setTileStateToStatic) }
 }
 
+function allStatic(movedTiles: readonly Tile[]) {
+    return movedTiles.every((t) => t.state.type === 'static')
+}
+
 export function move(
     model: Model,
     direction: Direction,
@@ -346,13 +359,10 @@ export function move(
     }
 
     const movedTiles = slideAndMergeTiles(model.tiles, direction)
-    const allStatic = movedTiles.every((t) => t.state.type === 'static')
-    if (allStatic) {
+    if (allStatic(movedTiles)) {
+        // No tiles moved - check if game is stuck
         if (noMovesLeft(model.tiles)) {
-            return {
-                ...model,
-                gameStatus: 'over',
-            }
+            return { ...model, gameStatus: 'over' }
         }
         return null
     }
@@ -374,12 +384,10 @@ export function move(
     }
 
     // Spawn tile and check game over
-    const tilesAfterSpawn = spawnRandomTiles(
-        movedTiles,
-        CONFIG.tilesToSpawnPerMove,
-        random,
-    )
-    const newGameStatus = noMovesLeft(tilesAfterSpawn) ? 'over' : model.gameStatus
+    const tilesAfterSpawn = spawnRandomTiles(movedTiles, random)
+    const newGameStatus = noMovesLeft(tilesAfterSpawn)
+        ? 'over'
+        : model.gameStatus
 
     return {
         ...model,
