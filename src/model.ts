@@ -231,22 +231,19 @@ function hasWon(tiles: Tiles): boolean {
 }
 
 function isGameOver(tiles: Tiles): boolean {
-    // Has empty cell - game not over
     if (tiles.length < CONFIG.gridSize * CONFIG.gridSize) return false
 
-    // Has adjacent matching tiles - game not over
+    const directions: Array<[number, number]> = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     const matrix = tilesToMatrix(tiles)
-    for (let row = 0; row < CONFIG.gridSize; row++) {
-        for (let col = 0; col < CONFIG.gridSize; col++) {
-            const tile = matrix[row]?.[col]
-            if (!tile) continue
-            const right = matrix[row]?.[col + 1]
-            const down = matrix[row + 1]?.[col]
-            if (right && right.value === tile.value) return false
-            if (down && down.value === tile.value) return false
-        }
+
+    const hasNoMatchingNeighbor = ({ position: { row, col }, value }: Tile) => {
+        const hasMatch = directions.some(([dr, dc]) =>
+            matrix[row + dr]?.[col + dc]?.value === value
+        )
+        return !hasMatch
     }
-    return true
+
+    return tiles.every(hasNoMatchingNeighbor)
 }
 
 // Model state type
