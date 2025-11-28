@@ -1,13 +1,23 @@
 # Claude Instructions Summary
 
-## General Instructions
-- Workflow: Always present implementation plan for approval before implementing
-- Workflow: Use numbered/lettered prefixes with proper formatting when presenting options
-- Workflow: Always prefer editing existing files over creating new ones
-- Workflow: Only do what's explicitly asked, nothing more/less - discuss additional work first
-- Workflow: Don't keep jumping to implementation without thinking through the design first
-- Workflow: If 2-3 solutions rejected, ask user to share their approach:
+## foo
+- Always present implementation plan for approval before implementing
+- Use numbered/lettered prefixes with proper formatting when presenting options
+- Only do what's explicitly asked, nothing more/less - discuss additional work first
+- Don't keep jumping to implementation without thinking through the design first
+- If 2-3 solutions rejected, ask user to share their approach:
   > "It seems like you have a specific approach in mind. Could you share the solution you might be thinking of? That would be more efficient than me continuing to guess."
+- Be concise but complete, not super verbose
+- Don't present silly/obviously wrong answers
+- Always present recommended solution
+- When asked to "add todo:" just add it, no discussion needed - focus on current discussion
+- when presenting options/solutions always give recommendation
+- if my request is incorrect, can't be fulfilled don't proceed ahead without explicit confirmation
+- Always get approval before implementing; deviations from agreed plans require explicit discussion and permission
+- If I am straying off path, not focusing on core problem, getting finicky about anything, remind me of this instruction. I rather work on main objectives and keep the fluff, going down the rabbit hole, unable to pick between two solution when both are equally bad/good. Unnecessary perfection is dangerous. There is almost always time to come back and fix things, but more likely we won't have to come back. Ensure you do it as politely as you can. And not annoy be by continuously pointing it out. Give me some breathing room, then you can remark again. I won't tolerate you interfering with this reminder everytime.
+
+## General Instructions
+- Workflow: Always prefer editing existing files over creating new ones
 - Code Quality: Make impossible states impossible (ISI) for data models
 - Code Quality: Default design must always focus on Single Source of Truth
 - Code Quality: Focus on readability over performance (warn only about exponential increases)
@@ -21,11 +31,6 @@
 - Code Quality: Abstractions and precomputed configs are for decoupling/encapsulation, not optimization
 - Error Handling: Never swallow/rethrow same exceptions - let them propagate to top level to fail fast
 - Error Handling: **Exception:** Handle the case properly if needed for logical flow
-- Communication: Be concise but complete, not super verbose
-- Communication: Don't present silly/obviously wrong answers
-- Communication: Always present recommended solution
-- Communication: When asked to "add todo:" just add it, no discussion needed - focus on current discussion
-- Communication: when presenting options/solutions always give recommendation
 - File Paths: Don't use cd command or absolute paths when files are relative to workspace
 - File Paths: Use file names relative to current project workspace
 - File Paths: ALWAYS use workspace-relative paths for project files - NEVER use absolute Windows paths or `/mnt/c/` WSL paths.
@@ -35,9 +40,6 @@
 - Tools: Default to pnpm (infer from lockfile), not npm
 - Tools: For "diff" requests, use git diff for entire repository, don't assume which files are modified - analyze for bugs and issues
 - Package Management: if and when manually creating package.json file, ensure all dependencies are installed via package manager, don't hardcode them.
-- Approval: if my request is incorrect, can't be fulfilled don't proceed ahead without explicit confirmation.
-- Approval: Always get approval before implementing; deviations from agreed plans require explicit discussion and permission.
-- Focus: If I am straying off path, not focusing on core problem, getting finicky about anything, remind me of this instruction. I rather work on main objectives and keep the fluff, going down the rabbit hole, unable to pick between two solution when both are equally bad/good. Unnecessary perfection is dangerous. There is almost always time to come back and fix things, but more likely we won't have to come back. Ensure you do it as politely as you can. And not annoy be by continuously pointing it out. Give me some breathing room, then you can remark again. I won't tolerate you interfering with this reminder everytime.
 - Focus: Fixing subtle duplications or unnecessary indirection may help uncover major duplications that were previously hidden - jumping to tackle major duplication upfront isn't always the right approach, analyze carefully.
 - Design: When designing, avoid margin, and prefer padding. especially for vertical alignment. It's ok to use margin auto for centering horizontally
 
