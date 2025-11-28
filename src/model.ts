@@ -215,8 +215,7 @@ function spawnRandomTiles(tiles: Tiles, count: number, random: Random): Tiles {
     return newTiles
 }
 
-// Game state checks
-function computeScoreDelta(tiles: Tiles): number {
+function scoreFromTiles(tiles: Tiles): number {
     return tiles
         .filter((t) => t.state.type === 'merged')
         .reduce((sum, t) => sum + t.value, 0)
@@ -230,7 +229,7 @@ function hasWon(tiles: Tiles): boolean {
     return tiles.some((t) => t.value >= CONFIG.winValue)
 }
 
-function isGameOver(tiles: Tiles): boolean {
+function noMovesLeft(tiles: Tiles): boolean {
     const directions: Array<[number, number]> = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     const matrix = tilesToMatrix(tiles)
 
@@ -350,7 +349,7 @@ export function move(
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
     if (allStatic) {
         // No tiles moved - check if game is over
-        if (isGameOver(model.tiles)) {
+        if (noMovesLeft(model.tiles)) {
             return {
                 ...model,
                 gameStatus: 'over',
@@ -359,7 +358,7 @@ export function move(
         return null
     }
 
-    const scoreDelta = computeScoreDelta(movedTiles)
+    const scoreDelta = scoreFromTiles(movedTiles)
     const newDeltas = [...model.scoreDeltas, scoreDelta]
     const newScore = sumScoreDeltas(newDeltas)
     const newBestScore = Math.max(model.bestScore, newScore)
@@ -381,7 +380,7 @@ export function move(
         CONFIG.tilesToSpawnPerMove,
         random,
     )
-    const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : model.gameStatus
+    const newGameStatus = noMovesLeft(tilesAfterSpawn) ? 'over' : model.gameStatus
 
     return {
         ...model,
