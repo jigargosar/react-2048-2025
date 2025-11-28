@@ -34,12 +34,12 @@
 - Tools: Don't run interactive commands - present a clear plan for user to run instead, don't skip steps you can't do
 - Tools: Default to pnpm (infer from lockfile), not npm
 - Tools: For "diff" requests, use git diff for entire repository, don't assume which files are modified - analyze for bugs and issues
-- Package Management: if and when manually creating package.json file, ensure all dependencies are installed via package manager, dont hardcode them.
+- Package Management: if and when manually creating package.json file, ensure all dependencies are installed via package manager, don't hardcode them.
 - Approval: if my request is incorrect, can't be fulfilled don't proceed ahead without explicit confirmation.
 - Approval: Always get approval before implementing; deviations from agreed plans require explicit discussion and permission.
-- Focus: If I am straying off path, not focusing on core problem, getting finiky about anything, remind me of this instruction. I rather work on main objectives and keep the fluff, going down the rabbit hole, unable to pick between two solution when both are equally bad/good. Unecessary perfection is dangerous. There is almost always time to comeback and fix things, but more likely we wont have to comeback. Ensure you do it as politely as you can. And not annoy be by contineously pointing it out. Give me some breathing room, then you can remark again. I wont tolerate you interfering with this reminder everytime.
+- Focus: If I am straying off path, not focusing on core problem, getting finicky about anything, remind me of this instruction. I rather work on main objectives and keep the fluff, going down the rabbit hole, unable to pick between two solution when both are equally bad/good. Unnecessary perfection is dangerous. There is almost always time to come back and fix things, but more likely we won't have to come back. Ensure you do it as politely as you can. And not annoy be by continuously pointing it out. Give me some breathing room, then you can remark again. I won't tolerate you interfering with this reminder everytime.
 - Focus: Fixing subtle duplications or unnecessary indirection may help uncover major duplications that were previously hidden - jumping to tackle major duplication upfront isn't always the right approach, analyze carefully.
-- Design: When designing, avod margin, and prefer padding. especially for vertical alignment. Its ok to use margin auto for centering horizontally
+- Design: When designing, avoid margin, and prefer padding. especially for vertical alignment. It's ok to use margin auto for centering horizontally
 
 ## Git
 - Never use `-A` or `.` to stage files, always use explicit file names - never blanket add
@@ -60,23 +60,10 @@
 - Run `npm version [level] && git push --tags`
 - NEVER run `npm publish`, unless explicitly asked
 
-## Prettier Config
-- When user asks to install prettier, and it's not installed: install using inferred package manager as dev dependency
-- If package manager cannot be inferred, use pnpm
-- Ensure prettier config exists in package.json, if not found use default below - if found don't modify it:
-```
-"prettier": {
-  "semi": false,
-  "singleQuote": true,
-  "trailingComma": "all",
-  "endOfLine": "lf"
-}
-```
-
-## Elm-Specific
+## Elm
 - Always check compilation with exactly this command `elm make <file> --output=NUL`. Don't invent your own.
 - Never use `--output=elm.js` or similar - we only want to verify compilation, not create artifacts
-- In Elm, when needed, try using multiple class attributes, to group sementaic classes together, so its easy to read and also not having to read a long list of classes.
-- Elm: when running dev server as background task, check its last output to figure out if there any compilation errors. no need to run elm make. Also if dev server is not running offer to start one.
+- In Elm, when needed, try using multiple class attributes, to group semantic classes together, so it's easy to read and also not having to read a long list of classes.
+- Elm: when running dev server as background task, check its last output to figure out if there is any compilation errors. no need to run elm make. Also, if dev server is not running offer to start one.
 
 ## Miscellaneous Instructions
