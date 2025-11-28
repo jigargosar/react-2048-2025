@@ -48,6 +48,7 @@ type MatrixMaybeTile = Matrix<MaybeTile>
 export type ScoreDeltas = readonly number[]
 export type Random = () => number
 type MoveResult = { tiles: Tiles; scoreDelta: number }
+type MaybeMoveResult = MoveResult | null
 
 // Model-only constants
 const POSITION_MATRIX: Matrix<Position> = times(
@@ -255,10 +256,10 @@ function isGameOver(tiles: Tiles): boolean {
 }
 
 // Main move function
-function move(tiles: Tiles, direction: Direction): MoveResult {
+function move(tiles: Tiles, direction: Direction): MaybeMoveResult {
     const movedTiles = slideAndMergeTiles(tiles, direction)
     const allStatic = movedTiles.every((t) => t.state.type === 'static')
-    if (allStatic) return { tiles, scoreDelta: 0 }
+    if (allStatic) return null
 
     const scoreDelta = computeScoreDelta(movedTiles)
     return { tiles: movedTiles, scoreDelta }
@@ -366,47 +367,29 @@ export function applyMove(
     if (model.gameStatus === 'won' || model.gameStatus === 'over') {
         return null
     }
+
     const result = move(model.tiles, direction)
-
-    if (result.scoreDelta > 0) {
-        const newDeltas = [...model.scoreDeltas, result.scoreDelta]
-        const newScore = sumScoreDeltas(newDeltas)
-        const newBestScore = Math.max(model.bestScore, newScore)
-
-        // Check win first - no spawn on win
-        if (model.gameStatus === 'playing' && hasWon(result.tiles)) {
-            return {
-                ...model,
-                tiles: result.tiles,
-                scoreDeltas: newDeltas,
-                bestScore: newBestScore,
-                gameStatus: 'won',
-            }
-        }
-
-        // Spawn tile and check game over
-        const tilesAfterSpawn = spawnRandomTiles(
-            result.tiles,
-            CONFIG.tilesToSpawnPerMove,
-            random,
-        )
-        const newGameStatus = isGameOver(tilesAfterSpawn)
-            ? 'over'
-            : model.gameStatus
-
-        return {
-            ...model,
-            tiles: tilesAfterSpawn,
-            scoreDeltas: newDeltas,
-            bestScore: newBestScore,
-            gameStatus: newGameStatus,
-        }
+    if (result === null) {
+        return null
     }
 
-    // No score delta - check win/spawn anyway
+    // Update score if there was a merge
+    const newDeltas =
+        result.scoreDelta > 0
+            ? [...model.scoreDeltas, result.scoreDelta]
+            : model.scoreDeltas
+    const newScore = sumScoreDeltas(newDeltas)
+    const newBestScore = Math.max(model.bestScore, newScore)
+
     // Check win first - no spawn on win
     if (model.gameStatus === 'playing' && hasWon(result.tiles)) {
-        return { ...model, tiles: result.tiles, gameStatus: 'won' }
+        return {
+            ...model,
+            tiles: result.tiles,
+            scoreDeltas: newDeltas,
+            bestScore: newBestScore,
+            gameStatus: 'won',
+        }
     }
 
     // Spawn tile and check game over
@@ -415,9 +398,13 @@ export function applyMove(
         CONFIG.tilesToSpawnPerMove,
         random,
     )
-    const newGameStatus = isGameOver(tilesAfterSpawn)
-        ? 'over'
-        : model.gameStatus
+    const newGameStatus = isGameOver(tilesAfterSpawn) ? 'over' : model.gameStatus
 
-    return { ...model, tiles: tilesAfterSpawn, gameStatus: newGameStatus }
+    return {
+        ...model,
+        tiles: tilesAfterSpawn,
+        scoreDeltas: newDeltas,
+        bestScore: newBestScore,
+        gameStatus: newGameStatus,
+    }
 }
