@@ -4,7 +4,8 @@
       "Bash(pnpm lint:*)",
       "Bash(pnpm format:*)",
       "Bash(pnpm run lint)",
-      "Bash(pnpm run build)"
+      "Bash(pnpm run build)",
+      "Bash(pnpm test:run:*)"
     ],
     "deny": [],
     "ask": []

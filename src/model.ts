@@ -225,6 +225,11 @@ function hasWinningTile(tiles: Tiles): boolean {
 }
 
 function noMovesLeft(tiles: Tiles): boolean {
+    // If board is not full, there are still moves available
+    if (tiles.length < CONFIG.gridSize * CONFIG.gridSize) {
+        return false
+    }
+
     const dirs: Array<[number, number]> = [
         [0, 1],
         [1, 0],
