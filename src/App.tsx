@@ -309,23 +309,8 @@ function renderTile({
     )
 }
 
-function renderTiles(tiles: Tiles) {
-    return tiles.map((tile, index) => {
-        switch (tile.state.type) {
-            case 'merged':
-                return renderMergedTile(tile, tile.state, index)
-            case 'moved':
-                return renderMovedTile(tile, tile.state, index)
-            case 'spawned':
-                return renderSpawnedTile(tile, tile.state, index)
-            case 'static':
-                return renderStaticTile(tile, tile.state, index)
-        }
-    })
-}
-
-function renderMergedTile(tile: Tile, state: MergedState, index: number) {
-    return (
+const TileRenderers = {
+    merged: (tile: Tile, state: MergedState, index: number) => (
         <div key={String(index)} className="contents">
             {renderTile({
                 from: state.from1,
@@ -349,39 +334,48 @@ function renderMergedTile(tile: Tile, state: MergedState, index: number) {
                 debug: { label: 'merged', bgColor: '#C2185B' },
             })}
         </div>
-    )
+    ),
+    moved: (tile: Tile, state: MovedState, index: number) =>
+        renderTile({
+            from: state.from,
+            to: tile.position,
+            value: tile.value,
+            animClass: 'tile-move-anim',
+            debug: { label: 'moved', bgColor: '#00897B' },
+            key: String(index),
+        }),
+    spawned: (tile: Tile, _state: SpawnedState, index: number) =>
+        renderTile({
+            from: tile.position,
+            to: tile.position,
+            value: tile.value,
+            animClass: 'tile-spawn-anim',
+            debug: { label: 'spawned', bgColor: '#7B1FA2' },
+            key: String(index),
+        }),
+    static: (tile: Tile, _state: StaticState, index: number) =>
+        renderTile({
+            from: tile.position,
+            to: tile.position,
+            value: tile.value,
+            animClass: '',
+            debug: { label: 'static', bgColor: '#546E7A' },
+            key: String(index),
+        }),
 }
 
-function renderMovedTile(tile: Tile, state: MovedState, index: number) {
-    return renderTile({
-        from: state.from,
-        to: tile.position,
-        value: tile.value,
-        animClass: 'tile-move-anim',
-        debug: { label: 'moved', bgColor: '#00897B' },
-        key: String(index),
-    })
-}
-
-function renderSpawnedTile(tile: Tile, _state: SpawnedState, index: number) {
-    return renderTile({
-        from: tile.position,
-        to: tile.position,
-        value: tile.value,
-        animClass: 'tile-spawn-anim',
-        debug: { label: 'spawned', bgColor: '#7B1FA2' },
-        key: String(index),
-    })
-}
-
-function renderStaticTile(tile: Tile, _state: StaticState, index: number) {
-    return renderTile({
-        from: tile.position,
-        to: tile.position,
-        value: tile.value,
-        animClass: '',
-        debug: { label: 'static', bgColor: '#546E7A' },
-        key: String(index),
+function renderTiles(tiles: Tiles) {
+    return tiles.map((tile, index) => {
+        switch (tile.state.type) {
+            case 'merged':
+                return TileRenderers.merged(tile, tile.state, index)
+            case 'moved':
+                return TileRenderers.moved(tile, tile.state, index)
+            case 'spawned':
+                return TileRenderers.spawned(tile, tile.state, index)
+            case 'static':
+                return TileRenderers.static(tile, tile.state, index)
+        }
     })
 }
 
