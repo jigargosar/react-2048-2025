@@ -3,7 +3,6 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { inc } from 'ramda'
 import { createSeededRandom } from './utils.ts'
 import type {
-    Direction,
     GameStatus,
     MergedState,
     Model,
@@ -22,6 +21,7 @@ import {
     createAllTestTilesModel,
     createTestGameOverModel,
     createTestWinModel,
+    Direction,
     INITIAL_MODEL,
     move,
     prepareMove,
@@ -50,13 +50,13 @@ function saveBestScore(score: number): void {
 function parseDirectionFromKey(key: string): Direction | null {
     switch (key) {
         case 'ArrowLeft':
-            return 'left'
+            return Direction.left
         case 'ArrowRight':
-            return 'right'
+            return Direction.right
         case 'ArrowUp':
-            return 'up'
+            return Direction.up
         case 'ArrowDown':
-            return 'down'
+            return Direction.down
         default:
             return null
     }
@@ -76,9 +76,9 @@ function parseDirectionFromSwipe(
         return null
 
     if (absX > absY) {
-        return deltaX > 0 ? 'right' : 'left'
+        return deltaX > 0 ? Direction.right : Direction.left
     } else {
-        return deltaY > 0 ? 'down' : 'up'
+        return deltaY > 0 ? Direction.down : Direction.up
     }
 }
 

@@ -10,7 +10,20 @@ import { keepNonNil, type Matrix, reverseRows, transpose } from './utils.ts'
 // ============================================
 
 export type Position = Readonly<{ row: number; col: number }>
-export type Direction = 'left' | 'right' | 'up' | 'down'
+
+export const Direction: {
+    readonly left: 'left'
+    readonly right: 'right'
+    readonly up: 'up'
+    readonly down: 'down'
+} = {
+    left: 'left',
+    right: 'right',
+    up: 'up',
+    down: 'down',
+}
+
+export type Direction = (typeof Direction)[keyof typeof Direction]
 
 export type StaticState = Readonly<{ type: 'static' }>
 export type MovedState = Readonly<{ type: 'moved'; from: Position }>
@@ -156,13 +169,13 @@ function slideAndMergeMatrix(
     dir: Direction,
 ): MatrixMaybeTile {
     switch (dir) {
-        case 'left':
+        case Direction.left:
             return slideLeft(matrix)
-        case 'right':
+        case Direction.right:
             return pipe(matrix, reverseRows, slideLeft, reverseRows)
-        case 'up':
+        case Direction.up:
             return pipe(matrix, transpose, slideLeft, transpose)
-        case 'down':
+        case Direction.down:
             return pipe(
                 matrix,
                 transpose,

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { move, type Model, CONFIG, TOTAL_TILES } from './model'
+import { move, type Model, CONFIG, TOTAL_TILES, Direction } from './model'
 
 // Helper to create a deterministic random function
 const createMockRandom = (values: readonly number[]) => {
@@ -60,7 +60,7 @@ describe('2048 Game Logic', () => {
             }
 
             const random = createMockRandom([0.5, 0.5])
-            const result = move(model, 'down', random)
+            const result = move(model, Direction.down, random)
 
             // Should not be game over - board is not full
             expect(result).not.toBeNull()
@@ -81,7 +81,7 @@ describe('2048 Game Logic', () => {
             }
 
             const random = createMockRandom([0.5, 0.5])
-            const result = move(model, 'down', random)
+            const result = move(model, Direction.down, random)
 
             // Full board, no moves possible → game over
             expect(result).not.toBeNull()
@@ -103,7 +103,7 @@ describe('2048 Game Logic', () => {
             }
 
             const random = createMockRandom([0.5, 0.5])
-            const result = move(model, 'left', random)
+            const result = move(model, Direction.left, random)
 
             expect(result).not.toBeNull()
             if (result) {
@@ -129,7 +129,7 @@ describe('2048 Game Logic', () => {
             }
 
             const random = createMockRandom([0.5, 0.5])
-            const result = move(model, 'left', random)
+            const result = move(model, Direction.left, random)
 
             expect(result).not.toBeNull()
             if (result) {
@@ -150,7 +150,7 @@ describe('2048 Game Logic', () => {
             }
 
             const random = createMockRandom([0.5, 0.5])
-            const result = move(model, 'left', random)
+            const result = move(model, Direction.left, random)
 
             expect(result).not.toBeNull()
             if (result) {
