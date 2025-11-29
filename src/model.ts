@@ -1,3 +1,6 @@
+// ============================================
+// IMPORTS
+// ============================================
 import { pipe } from 'fp-ts/function'
 import { flatten, repeat, times } from 'ramda'
 import { keepNonNil, type Matrix, reverseRows, transpose } from './utils.ts'
@@ -16,8 +19,9 @@ export type MergedState = Readonly<{
     type: 'merged'
     from1: Position
     from2: Position
-    value: number
+    value: number // clearer: the value before merge
 }>
+
 export type TileState = StaticState | MovedState | MergedState | SpawnedState
 
 export type Tile = Readonly<{
@@ -40,7 +44,6 @@ export const CONFIG = {
 // MODEL - Pure Game Logic
 // ============================================
 
-// Model-only types
 type MaybeTile = Tile | null
 type Positions = readonly Position[]
 type MaybeTiles = readonly MaybeTile[]
@@ -48,45 +51,45 @@ type MatrixMaybeTile = Matrix<MaybeTile>
 export type ScoreDeltas = readonly number[]
 export type Random = () => number
 
-// Model-only constants
+// Position matrix
 const POSITION_MATRIX: Matrix<Position> = times(
     (row) => times((col) => ({ row, col }), CONFIG.gridSize),
     CONFIG.gridSize,
 )
 export const ALL_POSITIONS: Positions = POSITION_MATRIX.flat()
 
-// Tile state transformations
-function setTileStateToStatic(tile: Tile): Tile {
-    return { ...tile, state: { type: 'static' } }
-}
+// ============================================
+// TILE STATE OPS
+// ============================================
 
-function setTileStateToMoved(tile: Tile): Tile {
-    return {
-        ...tile,
-        state: { type: 'moved', from: tile.position },
-    }
-}
-
-function createMergedTile(tile1: Tile, tile2: Tile): Tile {
-    return {
-        value: tile1.value * 2,
-        position: tile1.position,
+const TileOps = {
+    static: (t: Tile): Tile => ({ ...t, state: { type: 'static' } }),
+    moved: (t: Tile): Tile => ({
+        ...t,
+        state: { type: 'moved', from: t.position },
+    }),
+    merged: (a: Tile, b: Tile): Tile => ({
+        value: a.value * 2, // <-- always the display value
+        position: a.position,
         state: {
             type: 'merged',
-            from1: tile1.position,
-            from2: tile2.position,
-            value: tile1.value,
+            from1: a.position,
+            from2: b.position,
+            value: a.value, // <-- used only for animation logic
         },
-    }
+    }),
+    spawned: (pos: Position, value: number): Tile => ({
+        position: pos,
+        value,
+        state: { type: 'spawned' },
+    }),
 }
 
-function createSpawnedTile(position: Position, value: number): Tile {
-    return { value, position, state: { type: 'spawned' } }
-}
+// ============================================
+// MATRIX OPS
+// ============================================
 
-// Matrix operations
 function tilesToMatrix(tiles: Tiles): MatrixMaybeTile {
-    // Not using MatrixMaybeTile - needs mutable array during construction
     const matrix: MaybeTile[][] = times(
         () => repeat(null, CONFIG.gridSize),
         CONFIG.gridSize,
@@ -97,56 +100,50 @@ function tilesToMatrix(tiles: Tiles): MatrixMaybeTile {
             row[tile.position.col] = tile
         }
     }
-
     return matrix
 }
 
 function setPositionsFromMatrix(matrix: MatrixMaybeTile): MatrixMaybeTile {
-    return matrix.map((row, rowIndex) =>
-        row.map((tile, colIndex) => {
-            if (tile === null) return null
-            return {
-                ...tile,
-                position: { row: rowIndex, col: colIndex },
-            }
-        }),
+    return matrix.map((row, r) =>
+        row.map((tile, c) =>
+            tile ? { ...tile, position: { row: r, col: c } } : null,
+        ),
     )
 }
 
-// Slide and merge logic
+// ============================================
+// SLIDE + MERGE ROW
+// ============================================
+
 function slideAndMergeRowLeft(row: MaybeTiles): MaybeTiles {
-    // Filter non-null tiles and keep their original indices
-    const nonNullTiles = keepNonNil(
-        row.map((tile, i) => (tile != null ? { tile, originalIndex: i } : null)),
-    )
+    const compact = keepNonNil(row)
+    const merged: Tile[] = []
 
-    // Not using MaybeTiles - needs mutable array during construction
-    const result: MaybeTile[] = repeat(null, CONFIG.gridSize)
-    let writePos = 0
+    for (let i = 0; i < compact.length; i++) {
+        const current = compact[i]
+        const next = compact[i + 1]
 
-    for (const { tile, originalIndex } of nonNullTiles) {
-        const prevTile = result[writePos - 1]
-
-        const canMerge =
-            prevTile &&
-            prevTile.state.type !== 'merged' &&
-            prevTile.value === tile.value
-
-        if (canMerge) {
-            // Merge: replace previous tile with merged version
-            result[writePos - 1] = createMergedTile(prevTile, tile)
-        } else {
-            // No merge: determine state and write tile
-            result[writePos] =
-                writePos === originalIndex
-                    ? setTileStateToStatic(tile)
-                    : setTileStateToMoved(tile)
-            writePos++
+        if (current && next && current.value === next.value) {
+            merged.push(TileOps.merged(current, next))
+            i++ // skip next
+        } else if (current) {
+            // static if same index, moved otherwise
+            merged.push(
+                i === row.indexOf(current)
+                    ? TileOps.static(current)
+                    : TileOps.moved(current),
+            )
         }
     }
 
-    return result
+    const nullCount = CONFIG.gridSize - merged.length
+    const nulls: MaybeTile[] = repeat(null, nullCount)
+    return [...merged, ...nulls]
 }
+
+// ============================================
+// SLIDE MATRIX
+// ============================================
 
 function slideLeft(matrix: MatrixMaybeTile): MatrixMaybeTile {
     return matrix.map(slideAndMergeRowLeft)
@@ -154,9 +151,9 @@ function slideLeft(matrix: MatrixMaybeTile): MatrixMaybeTile {
 
 function slideAndMergeMatrix(
     matrix: MatrixMaybeTile,
-    direction: Direction,
+    dir: Direction,
 ): MatrixMaybeTile {
-    switch (direction) {
+    switch (dir) {
         case 'left':
             return slideLeft(matrix)
         case 'right':
@@ -175,45 +172,43 @@ function slideAndMergeMatrix(
     }
 }
 
-function slideAndMergeTiles(tiles: Tiles, direction: Direction): Tiles {
+function slideAndMergeTiles(tiles: Tiles, dir: Direction): Tiles {
     return pipe(
         tiles,
         tilesToMatrix,
-        (matrix) => slideAndMergeMatrix(matrix, direction),
+        (m) => slideAndMergeMatrix(m, dir),
         setPositionsFromMatrix,
         flatten,
         keepNonNil,
     )
 }
 
-// Tile spawning
+// ============================================
+// SPAWN LOGIC
+// ============================================
+
 function getEmptyPositions(tiles: Tiles): Positions {
     const matrix = tilesToMatrix(tiles)
     return ALL_POSITIONS.filter((p) => matrix[p.row]?.[p.col] === null)
 }
 
 function spawnRandomTiles(tiles: Tiles, random: Random): Tiles {
-    let emptyPositions = getEmptyPositions(tiles)
+    const empty = getEmptyPositions(tiles).slice()
     const newTiles = [...tiles]
 
-    for (
-        let i = 0;
-        i < CONFIG.tilesToSpawnPerMove && emptyPositions.length > 0;
-        i++
-    ) {
-        const randomIndex = Math.floor(random() * emptyPositions.length)
-        const position = emptyPositions[randomIndex]
-        if (position) {
-            const value = random() < 0.9 ? 2 : 4
-            newTiles.push(createSpawnedTile(position, value))
-            emptyPositions = emptyPositions.filter(
-                (_, idx) => idx !== randomIndex,
-            )
+    for (let i = 0; i < CONFIG.tilesToSpawnPerMove && empty.length > 0; i++) {
+        const idx = Math.floor(random() * empty.length)
+        const pos = empty.splice(idx, 1)[0]
+        if (pos) {
+            newTiles.push(TileOps.spawned(pos, random() < 0.9 ? 2 : 4))
         }
     }
-
     return newTiles
 }
+
+// ============================================
+// SCORE + STATUS CHECKS
+// ============================================
 
 function scoreFromTiles(tiles: Tiles): number {
     return tiles
@@ -230,7 +225,7 @@ function hasWinningTile(tiles: Tiles): boolean {
 }
 
 function noMovesLeft(tiles: Tiles): boolean {
-    const directions: Array<[number, number]> = [
+    const dirs: Array<[number, number]> = [
         [0, 1],
         [1, 0],
         [0, -1],
@@ -238,17 +233,18 @@ function noMovesLeft(tiles: Tiles): boolean {
     ]
     const matrix = tilesToMatrix(tiles)
 
-    const hasNoMatchingNeighbor = ({ position: { row, col }, value }: Tile) => {
-        const hasMatch = directions.some(
-            ([dr, dc]) => matrix[row + dr]?.[col + dc]?.value === value,
-        )
-        return !hasMatch
-    }
-
-    return tiles.every(hasNoMatchingNeighbor)
+    return tiles.every(
+        ({ position: { row, col }, value }) =>
+            !dirs.some(
+                ([dr, dc]) => matrix[row + dr]?.[col + dc]?.value === value,
+            ),
+    )
 }
 
-// Model state type
+// ============================================
+// MODEL TYPES + INITIAL STATE
+// ============================================
+
 export type GameStatus = 'playing' | 'won' | 'continue' | 'over'
 
 export type Model = {
@@ -273,11 +269,67 @@ export const INITIAL_MODEL: Model = {
     bestScore: 0,
 }
 
-// Model update functions
+// ============================================
+// MODEL HELPERS
+// ============================================
+
 export function continueGameModel(model: Model): Model {
-    if (model.gameStatus !== 'won') return model
-    return { ...model, gameStatus: 'continue' }
+    return model.gameStatus === 'won'
+        ? { ...model, gameStatus: 'continue' }
+        : model
 }
+
+export function prepareMove(model: Model): MaybeModel {
+    if (['won', 'over'].includes(model.gameStatus)) return null
+    return { ...model, tiles: model.tiles.map(TileOps.static) }
+}
+
+// ============================================
+// MAIN MOVE FUNCTION
+// ============================================
+
+export function move(model: Model, dir: Direction, random: Random): MaybeModel {
+    if (['won', 'over'].includes(model.gameStatus)) return null
+
+    const moved = slideAndMergeTiles(model.tiles, dir)
+    if (moved.every((t) => t.state.type === 'static')) {
+        return noMovesLeft(model.tiles)
+            ? { ...model, gameStatus: 'over' }
+            : null
+    }
+
+    const scoreDelta = scoreFromTiles(moved)
+    const newDeltas = [...model.scoreDeltas, scoreDelta]
+    const newScore = sumScoreDeltas(newDeltas)
+    const bestScore = Math.max(model.bestScore, newScore)
+
+    // Win check first — no spawn if won
+    if (model.gameStatus === 'playing' && hasWinningTile(moved)) {
+        return {
+            ...model,
+            tiles: moved,
+            scoreDeltas: newDeltas,
+            bestScore,
+            gameStatus: 'won',
+        }
+    }
+
+    // Spawn new tiles
+    const spawned = spawnRandomTiles(moved, random)
+    const newStatus = noMovesLeft(spawned) ? 'over' : model.gameStatus
+
+    return {
+        ...model,
+        tiles: spawned,
+        scoreDeltas: newDeltas,
+        bestScore,
+        gameStatus: newStatus,
+    }
+}
+
+// ============================================
+// TEST HELPERS
+// ============================================
 
 export function createTestWinModel(model: Model): Model {
     return {
@@ -331,65 +383,5 @@ export function createAllTestTilesModel(model: Model): Model {
         tiles,
         gameStatus: 'playing',
         scoreDeltas: [],
-    }
-}
-
-export function prepareMove(model: Model): MaybeModel {
-    if (['won', 'over'].includes(model.gameStatus)) {
-        return null
-    }
-    return { ...model, tiles: model.tiles.map(setTileStateToStatic) }
-}
-
-function allStatic(movedTiles: readonly Tile[]) {
-    return movedTiles.every((t) => t.state.type === 'static')
-}
-
-export function move(
-    model: Model,
-    direction: Direction,
-    random: Random,
-): MaybeModel {
-    if (['won', 'over'].includes(model.gameStatus)) {
-        return null
-    }
-
-    const movedTiles = slideAndMergeTiles(model.tiles, direction)
-    if (allStatic(movedTiles)) {
-        // No tiles moved - check if game is stuck
-        if (noMovesLeft(model.tiles)) {
-            return { ...model, gameStatus: 'over' }
-        }
-        return null
-    }
-
-    const scoreDelta = scoreFromTiles(movedTiles)
-    const newDeltas = [...model.scoreDeltas, scoreDelta]
-    const newScore = sumScoreDeltas(newDeltas)
-    const newBestScore = Math.max(model.bestScore, newScore)
-
-    // Check win first - no spawn on win
-    if (model.gameStatus === 'playing' && hasWinningTile(movedTiles)) {
-        return {
-            ...model,
-            tiles: movedTiles,
-            scoreDeltas: newDeltas,
-            bestScore: newBestScore,
-            gameStatus: 'won',
-        }
-    }
-
-    // Spawn tile and check game over
-    const tilesAfterSpawn = spawnRandomTiles(movedTiles, random)
-    const newGameStatus = noMovesLeft(tilesAfterSpawn)
-        ? 'over'
-        : model.gameStatus
-
-    return {
-        ...model,
-        tiles: tilesAfterSpawn,
-        scoreDeltas: newDeltas,
-        bestScore: newBestScore,
-        gameStatus: newGameStatus,
     }
 }
