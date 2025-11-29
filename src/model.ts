@@ -40,6 +40,8 @@ export const CONFIG = {
     localStorageBestScoreKey: 'bestScore',
 }
 
+export const TOTAL_TILES = CONFIG.gridSize * CONFIG.gridSize
+
 // ============================================
 // MODEL - Pure Game Logic
 // ============================================
