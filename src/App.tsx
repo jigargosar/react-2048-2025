@@ -10,20 +10,22 @@ import {
     createAllTestTilesModel,
     createTestGameOverModel,
     createTestWinModel,
-    type Direction,
-    type GameStatus,
     INITIAL_MODEL,
-    type MergedState,
-    type Model,
-    type MovedState,
-    type Position,
     prepareMove,
-    type ScoreDeltas,
-    type SpawnedState,
-    type StaticState,
     sumScoreDeltas,
-    type Tile,
-    type Tiles,
+} from './model.ts'
+import type {
+    Direction,
+    GameStatus,
+    MergedState,
+    Model,
+    MovedState,
+    Position,
+    ScoreDeltas,
+    SpawnedState,
+    StaticState,
+    Tile,
+    Tiles,
 } from './model.ts'
 
 // ============================================
