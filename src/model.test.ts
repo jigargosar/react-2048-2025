@@ -64,9 +64,7 @@ describe('2048 Game Logic', () => {
 
             // Should not be game over - board is not full
             expect(result).not.toBeNull()
-            if (result) {
-                expect(result.gameStatus).not.toBe('over')
-            }
+            expect(result?.gameStatus).not.toBe('over')
         })
 
         test('should end game when board is full and no moves possible', () => {
