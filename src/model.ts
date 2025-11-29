@@ -265,7 +265,19 @@ function noMovesLeft(tiles: Tiles): boolean {
 // MODEL TYPES + INITIAL STATE
 // ============================================
 
-export type GameStatus = 'playing' | 'won' | 'continue' | 'over'
+export const GameStatus: {
+    readonly playing: 'playing'
+    readonly won: 'won'
+    readonly continue: 'continue'
+    readonly over: 'over'
+} = {
+    playing: 'playing',
+    won: 'won',
+    continue: 'continue',
+    over: 'over',
+}
+
+export type GameStatus = (typeof GameStatus)[keyof typeof GameStatus]
 
 export type Model = {
     tiles: Tiles
@@ -285,7 +297,7 @@ export const INITIAL_MODEL: Model = {
         { value: 2, position: { row: 3, col: 2 }, state: { type: 'static' } },
     ],
     scoreDeltas: [],
-    gameStatus: 'playing',
+    gameStatus: GameStatus.playing,
     bestScore: 0,
 }
 
@@ -294,13 +306,13 @@ export const INITIAL_MODEL: Model = {
 // ============================================
 
 export function continueGameModel(model: Model): Model {
-    return model.gameStatus === 'won'
-        ? { ...model, gameStatus: 'continue' }
+    return model.gameStatus === GameStatus.won
+        ? { ...model, gameStatus: GameStatus.continue }
         : model
 }
 
 export function prepareMove(model: Model): MaybeModel {
-    if (['won', 'over'].includes(model.gameStatus)) return null
+    if (model.gameStatus === GameStatus.won || model.gameStatus === GameStatus.over) return null
     return { ...model, tiles: model.tiles.map(TileOps.static) }
 }
 
@@ -309,12 +321,12 @@ export function prepareMove(model: Model): MaybeModel {
 // ============================================
 
 export function move(model: Model, dir: Direction, random: Random): MaybeModel {
-    if (['won', 'over'].includes(model.gameStatus)) return null
+    if (model.gameStatus === GameStatus.won || model.gameStatus === GameStatus.over) return null
 
     const moved = slideAndMergeTiles(model.tiles, dir)
     if (moved.every((t) => t.state.type === 'static')) {
         return noMovesLeft(model.tiles)
-            ? { ...model, gameStatus: 'over' }
+            ? { ...model, gameStatus: GameStatus.over }
             : null
     }
 
@@ -324,19 +336,19 @@ export function move(model: Model, dir: Direction, random: Random): MaybeModel {
     const bestScore = Math.max(model.bestScore, newScore)
 
     // Win check first — no spawn if won
-    if (model.gameStatus === 'playing' && hasWinningTile(moved)) {
+    if (model.gameStatus === GameStatus.playing && hasWinningTile(moved)) {
         return {
             ...model,
             tiles: moved,
             scoreDeltas: newDeltas,
             bestScore,
-            gameStatus: 'won',
+            gameStatus: GameStatus.won,
         }
     }
 
     // Spawn new tiles
     const spawned = spawnRandomTiles(moved, random)
-    const newStatus = noMovesLeft(spawned) ? 'over' : model.gameStatus
+    const newStatus = noMovesLeft(spawned) ? GameStatus.over : model.gameStatus
 
     return {
         ...model,
@@ -366,7 +378,7 @@ export function createTestWinModel(model: Model): Model {
                 state: { type: 'static' },
             },
         ],
-        gameStatus: 'playing',
+        gameStatus: GameStatus.playing,
         scoreDeltas: [],
     }
 }
@@ -380,7 +392,7 @@ export function createTestGameOverModel(model: Model): Model {
     return {
         ...model,
         tiles,
-        gameStatus: 'playing',
+        gameStatus: GameStatus.playing,
         scoreDeltas: [],
     }
 }
@@ -401,7 +413,7 @@ export function createAllTestTilesModel(model: Model): Model {
     return {
         ...model,
         tiles,
-        gameStatus: 'playing',
+        gameStatus: GameStatus.playing,
         scoreDeltas: [],
     }
 }

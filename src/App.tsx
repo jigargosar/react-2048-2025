@@ -3,7 +3,6 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { inc } from 'ramda'
 import { createSeededRandom } from './utils.ts'
 import type {
-    GameStatus,
     MergedState,
     Model,
     MovedState,
@@ -22,6 +21,7 @@ import {
     createTestGameOverModel,
     createTestWinModel,
     Direction,
+    GameStatus,
     INITIAL_MODEL,
     move,
     prepareMove,
@@ -418,7 +418,7 @@ function renderGameBoard(
                 {ALL_POSITIONS.map(renderEmptyCell)}
                 {renderTiles(tiles)}
             </div>
-            {gameStatus === 'won' && (
+            {gameStatus === GameStatus.won && (
                 <GameOverlay
                     title="You Won!"
                     buttons={[
@@ -427,7 +427,7 @@ function renderGameBoard(
                     ]}
                 />
             )}
-            {gameStatus === 'over' && (
+            {gameStatus === GameStatus.over && (
                 <GameOverlay
                     title="Game Over"
                     buttons={[{ label: 'New Game', onClick: resetGame }]}

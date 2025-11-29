@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { move, type Model, CONFIG, TOTAL_TILES, Direction } from './model'
+import { CONFIG, Direction, GameStatus, type Model, move, TOTAL_TILES } from './model'
 
 // Helper to create a deterministic random function
 const createMockRandom = (values: readonly number[]) => {
@@ -55,7 +55,7 @@ describe('2048 Game Logic', () => {
                     { value: 4, position: { row: 2, col: 1 }, state: { type: 'static' } },
                 ],
                 scoreDeltas: [],
-                gameStatus: 'playing',
+                gameStatus: GameStatus.playing,
                 bestScore: 0,
             }
 
@@ -64,7 +64,7 @@ describe('2048 Game Logic', () => {
 
             // Should not be game over - board is not full
             expect(result).not.toBeNull()
-            expect(result?.gameStatus).not.toBe('over')
+            expect(result?.gameStatus).not.toBe(GameStatus.over)
         })
 
         test('should end game when board is full and no moves possible', () => {
@@ -76,7 +76,7 @@ describe('2048 Game Logic', () => {
                     [4, 2, 4, 2],
                 ]),
                 scoreDeltas: [],
-                gameStatus: 'playing',
+                gameStatus: GameStatus.playing,
                 bestScore: 0,
             }
 
@@ -87,7 +87,7 @@ describe('2048 Game Logic', () => {
             expect(result).not.toBeNull()
             if (result) {
                 expect(result.tiles.length).toBe(TOTAL_TILES)
-                expect(result.gameStatus).toBe('over')
+                expect(result.gameStatus).toBe(GameStatus.over)
             }
         })
 
@@ -98,7 +98,7 @@ describe('2048 Game Logic', () => {
                     { value: 2, position: { row: 0, col: 1 }, state: { type: 'static' } },
                 ],
                 scoreDeltas: [],
-                gameStatus: 'playing',
+                gameStatus: GameStatus.playing,
                 bestScore: 0,
             }
 
@@ -124,7 +124,7 @@ describe('2048 Game Logic', () => {
                     { value: 2, position: { row: 0, col: 3 }, state: { type: 'static' } },
                 ],
                 scoreDeltas: [],
-                gameStatus: 'playing',
+                gameStatus: GameStatus.playing,
                 bestScore: 0,
             }
 
@@ -145,7 +145,7 @@ describe('2048 Game Logic', () => {
                     { value: 2, position: { row: 0, col: 1 }, state: { type: 'static' } },
                 ],
                 scoreDeltas: [],
-                gameStatus: 'playing',
+                gameStatus: GameStatus.playing,
                 bestScore: 0,
             }
 
@@ -171,7 +171,7 @@ describe('2048 Game Logic', () => {
                     [4, 2, 4, 2],
                 ]),
                 scoreDeltas: [],
-                gameStatus: 'playing',
+                gameStatus: GameStatus.playing,
                 bestScore: 0,
             }
 
