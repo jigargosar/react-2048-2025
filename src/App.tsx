@@ -2,18 +2,6 @@ import type React from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { inc } from 'ramda'
 import { createSeededRandom } from './utils.ts'
-import {
-    ALL_POSITIONS,
-    move,
-    CONFIG,
-    continueGameModel,
-    createAllTestTilesModel,
-    createTestGameOverModel,
-    createTestWinModel,
-    INITIAL_MODEL,
-    prepareMove,
-    sumScoreDeltas,
-} from './model.ts'
 import type {
     Direction,
     GameStatus,
@@ -26,6 +14,18 @@ import type {
     StaticState,
     Tile,
     Tiles,
+} from './model.ts'
+import {
+    ALL_POSITIONS,
+    CONFIG,
+    continueGameModel,
+    createAllTestTilesModel,
+    createTestGameOverModel,
+    createTestWinModel,
+    INITIAL_MODEL,
+    move,
+    prepareMove,
+    sumScoreDeltas,
 } from './model.ts'
 
 // ============================================
