@@ -42,18 +42,11 @@ describe('2048 Game Logic', () => {
         test('should NOT end game when board is not full', () => {
             // Board with 10 tiles, no merges possible, but not full
             const model: Model = {
-                tiles: [
-                    { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
-                    { value: 4, position: { row: 0, col: 1 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 0, col: 2 }, state: { type: 'static' } },
-                    { value: 4, position: { row: 0, col: 3 }, state: { type: 'static' } },
-                    { value: 4, position: { row: 1, col: 0 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 1, col: 1 }, state: { type: 'static' } },
-                    { value: 4, position: { row: 1, col: 2 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 1, col: 3 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 2, col: 0 }, state: { type: 'static' } },
-                    { value: 4, position: { row: 2, col: 1 }, state: { type: 'static' } },
-                ],
+                tiles: createBoard([
+                    [2, 4, 2, 4],
+                    [4, 2, 4, 2],
+                    [2, 4, '_', '_'],
+                ]),
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
@@ -93,10 +86,7 @@ describe('2048 Game Logic', () => {
 
         test('should merge tiles correctly', () => {
             const model: Model = {
-                tiles: [
-                    { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 0, col: 1 }, state: { type: 'static' } },
-                ],
+                tiles: createBoard([[2, 2, '_', '_']]),
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
@@ -117,12 +107,7 @@ describe('2048 Game Logic', () => {
 
         test('should not merge same tile twice', () => {
             const model: Model = {
-                tiles: [
-                    { value: 2, position: { row: 0, col: 0 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 0, col: 1 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 0, col: 2 }, state: { type: 'static' } },
-                    { value: 2, position: { row: 0, col: 3 }, state: { type: 'static' } },
-                ],
+                tiles: createBoard([[2, 2, 2, 2]]),
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
@@ -141,9 +126,7 @@ describe('2048 Game Logic', () => {
 
         test('should spawn tiles after successful move', () => {
             const model: Model = {
-                tiles: [
-                    { value: 2, position: { row: 0, col: 1 }, state: { type: 'static' } },
-                ],
+                tiles: createBoard([['_', 2, '_', '_']]),
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
@@ -178,7 +161,7 @@ describe('2048 Game Logic', () => {
             const random = createMockRandom([0.5, 0.5])
 
             // Try to move down - nothing will move (tiles already at bottom or blocked)
-            const result = move(model, 'down', random)
+            const result = move(model, Direction.down, random)
 
             // Bug: Returns game over even though board has 1 empty space
             // Expected: null (invalid move) since board isn't full

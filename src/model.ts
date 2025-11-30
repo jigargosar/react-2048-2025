@@ -312,7 +312,11 @@ export function continueGameModel(model: Model): Model {
 }
 
 export function prepareMove(model: Model): MaybeModel {
-    if (model.gameStatus === GameStatus.won || model.gameStatus === GameStatus.over) return null
+    if (
+        model.gameStatus === GameStatus.won ||
+        model.gameStatus === GameStatus.over
+    )
+        return null
     return { ...model, tiles: model.tiles.map(TileOps.static) }
 }
 
@@ -321,7 +325,11 @@ export function prepareMove(model: Model): MaybeModel {
 // ============================================
 
 export function move(model: Model, dir: Direction, random: Random): MaybeModel {
-    if (model.gameStatus === GameStatus.won || model.gameStatus === GameStatus.over) return null
+    if (
+        model.gameStatus === GameStatus.won ||
+        model.gameStatus === GameStatus.over
+    )
+        return null
 
     const moved = slideAndMergeTiles(model.tiles, dir)
     if (moved.every((t) => t.state.type === 'static')) {
