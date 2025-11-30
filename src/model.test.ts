@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import { CONFIG, Direction, GameStatus, type Model, move, type ScoreDeltas, TOTAL_TILES, } from './model'
+import {
+    CONFIG,
+    Direction,
+    GameStatus,
+    type Model,
+    move,
+    type ScoreDeltas,
+    TOTAL_TILES,
+} from './model'
 
 // Helper to create a deterministic random function
 const createMockRandom = (values: readonly number[]) => {
@@ -14,7 +22,9 @@ const createMockRandom = (values: readonly number[]) => {
 // Helper to create board from readable pattern
 // '_' represents empty tile
 // Example: createBoard([[2, 4, '_', 2], [4, '_', 2, 4], ...])
-const createBoard = (pattern: ReadonlyArray<ReadonlyArray<number | '_'>>): Model['tiles'] => {
+const createBoard = (
+    pattern: ReadonlyArray<ReadonlyArray<number | '_'>>,
+): Model['tiles'] => {
     const tiles: Array<{
         value: number
         position: { row: number; col: number }
@@ -136,7 +146,9 @@ describe('2048 Game Logic', () => {
             expect(result).not.toBeNull()
             if (result) {
                 // Should merge into two 4 tiles, not one 8 tile
-                const fourTiles = result.tiles.filter((t) => t.value === 4 && t.state.type === 'merged')
+                const fourTiles = result.tiles.filter(
+                    (t) => t.value === 4 && t.state.type === 'merged',
+                )
                 expect(fourTiles.length).toBe(2)
             }
         })
@@ -154,7 +166,9 @@ describe('2048 Game Logic', () => {
             expect(result).not.toBeNull()
             if (result) {
                 // Tile moved from col 1 to col 0, then spawned new tiles
-                const spawnedTiles = result.tiles.filter((t) => t.state.type === 'spawned')
+                const spawnedTiles = result.tiles.filter(
+                    (t) => t.state.type === 'spawned',
+                )
                 expect(spawnedTiles.length).toBe(CONFIG.tilesToSpawnPerMove)
             }
         })
