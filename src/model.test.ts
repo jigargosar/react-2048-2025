@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { CONFIG, Direction, GameStatus, type Model, move, TOTAL_TILES } from './model'
+import { CONFIG, Direction, GameStatus, type Model, move, type ScoreDeltas, TOTAL_TILES, } from './model'
 
 // Helper to create a deterministic random function
 const createMockRandom = (values: readonly number[]) => {
@@ -37,20 +37,37 @@ const createBoard = (pattern: ReadonlyArray<ReadonlyArray<number | '_'>>): Model
     return tiles
 }
 
+// Helper to create a complete Model from readable pattern
+const createModel = (
+    pattern: ReadonlyArray<ReadonlyArray<number | '_'>>,
+    options: {
+        scoreDeltas: ScoreDeltas
+        gameStatus: GameStatus
+        bestScore: number
+    },
+): Model => ({
+    tiles: createBoard(pattern),
+    scoreDeltas: options.scoreDeltas,
+    gameStatus: options.gameStatus,
+    bestScore: options.bestScore,
+})
+
 describe('2048 Game Logic', () => {
     describe('move function - game over detection', () => {
         test('should NOT end game when board is not full', () => {
             // Board with 10 tiles, no merges possible, but not full
-            const model: Model = {
-                tiles: createBoard([
+            const model = createModel(
+                [
                     [2, 4, 2, 4],
                     [4, 2, 4, 2],
                     [2, 4, '_', '_'],
-                ]),
-                scoreDeltas: [],
-                gameStatus: GameStatus.playing,
-                bestScore: 0,
-            }
+                ],
+                {
+                    scoreDeltas: [],
+                    gameStatus: GameStatus.playing,
+                    bestScore: 0,
+                },
+            )
 
             const random = createMockRandom([0.5, 0.5])
             const result = move(model, Direction.down, random)
@@ -61,17 +78,19 @@ describe('2048 Game Logic', () => {
         })
 
         test('should end game when board is full and no moves possible', () => {
-            const model: Model = {
-                tiles: createBoard([
+            const model = createModel(
+                [
                     [2, 4, 2, 4],
                     [4, 2, 4, 2],
                     [2, 4, 2, 4],
                     [4, 2, 4, 2],
-                ]),
-                scoreDeltas: [],
-                gameStatus: GameStatus.playing,
-                bestScore: 0,
-            }
+                ],
+                {
+                    scoreDeltas: [],
+                    gameStatus: GameStatus.playing,
+                    bestScore: 0,
+                },
+            )
 
             const random = createMockRandom([0.5, 0.5])
             const result = move(model, Direction.down, random)
@@ -85,12 +104,11 @@ describe('2048 Game Logic', () => {
         })
 
         test('should merge tiles correctly', () => {
-            const model: Model = {
-                tiles: createBoard([[2, 2, '_', '_']]),
+            const model = createModel([[2, 2, '_', '_']], {
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
-            }
+            })
 
             const random = createMockRandom([0.5, 0.5])
             const result = move(model, Direction.left, random)
@@ -106,12 +124,11 @@ describe('2048 Game Logic', () => {
         })
 
         test('should not merge same tile twice', () => {
-            const model: Model = {
-                tiles: createBoard([[2, 2, 2, 2]]),
+            const model = createModel([[2, 2, 2, 2]], {
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
-            }
+            })
 
             const random = createMockRandom([0.5, 0.5])
             const result = move(model, Direction.left, random)
@@ -125,12 +142,11 @@ describe('2048 Game Logic', () => {
         })
 
         test('should spawn tiles after successful move', () => {
-            const model: Model = {
-                tiles: createBoard([['_', 2, '_', '_']]),
+            const model = createModel([['_', 2, '_', '_']], {
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
-            }
+            })
 
             const random = createMockRandom([0.5, 0.5])
             const result = move(model, Direction.left, random)
@@ -146,17 +162,19 @@ describe('2048 Game Logic', () => {
         test('should NOT declare game over when board not full (nothing moves case)', () => {
             // BUG: When move fails (all tiles static) and board has 15 tiles with no merges,
             // noMovesLeft returns true → game over, even though there's an empty space
-            const model: Model = {
-                tiles: createBoard([
+            const model = createModel(
+                [
                     [2, 4, 2, '_'], // 1 empty space
                     [4, 2, 4, 2],
                     [2, 4, 2, 4],
                     [4, 2, 4, 2],
-                ]),
-                scoreDeltas: [],
-                gameStatus: GameStatus.playing,
-                bestScore: 0,
-            }
+                ],
+                {
+                    scoreDeltas: [],
+                    gameStatus: GameStatus.playing,
+                    bestScore: 0,
+                },
+            )
 
             const random = createMockRandom([0.5, 0.5])
 
