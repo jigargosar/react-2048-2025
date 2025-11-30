@@ -20,11 +20,9 @@ const createMockRandom = (values: readonly number[]) => {
 }
 
 // Helper to create board from readable pattern
-// '_' represents empty tile
-// Example: createBoard([[2, 4, '_', 2], [4, '_', 2, 4], ...])
-const createBoard = (
-    pattern: ReadonlyArray<ReadonlyArray<number | '_'>>,
-): Model['tiles'] => {
+// 0 represents empty tile
+// Example: createBoard([[2, 4, 0, 2], [4, 0, 2, 4], ...])
+const createBoard = (pattern: ReadonlyArray<ReadonlyArray<number>>): Model['tiles'] => {
     const tiles: Array<{
         value: number
         position: { row: number; col: number }
@@ -35,7 +33,7 @@ const createBoard = (
         if (!rowPattern) continue
         for (let col = 0; col < rowPattern.length; col++) {
             const value = rowPattern[col]
-            if (typeof value === 'number') {
+            if (value && value !== 0) {
                 tiles.push({
                     value,
                     position: { row, col },
@@ -49,7 +47,7 @@ const createBoard = (
 
 // Helper to create a complete Model from readable pattern
 const createModel = (
-    pattern: ReadonlyArray<ReadonlyArray<number | '_'>>,
+    pattern: ReadonlyArray<ReadonlyArray<number>>,
     options: {
         scoreDeltas: ScoreDeltas
         gameStatus: GameStatus
@@ -70,7 +68,7 @@ describe('2048 Game Logic', () => {
                 [
                     [2, 4, 2, 4],
                     [4, 2, 4, 2],
-                    [2, 4, '_', '_'],
+                    [2, 4, 0, 0],
                 ],
                 {
                     scoreDeltas: [],
@@ -114,7 +112,7 @@ describe('2048 Game Logic', () => {
         })
 
         test('should merge tiles correctly', () => {
-            const model = createModel([[2, 2, '_', '_']], {
+            const model = createModel([[2, 2, 0, 0]], {
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
@@ -154,7 +152,7 @@ describe('2048 Game Logic', () => {
         })
 
         test('should spawn tiles after successful move', () => {
-            const model = createModel([['_', 2, '_', '_']], {
+            const model = createModel([[0, 2, 0, 0]], {
                 scoreDeltas: [],
                 gameStatus: GameStatus.playing,
                 bestScore: 0,
@@ -178,7 +176,7 @@ describe('2048 Game Logic', () => {
             // noMovesLeft returns true → game over, even though there's an empty space
             const model = createModel(
                 [
-                    [2, 4, 2, '_'], // 1 empty space
+                    [2, 4, 2, 0], // 1 empty space
                     [4, 2, 4, 2],
                     [2, 4, 2, 4],
                     [4, 2, 4, 2],
