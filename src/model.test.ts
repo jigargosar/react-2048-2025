@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import * as fc from 'fast-check'
 import {
     CONFIG,
     Direction,
@@ -196,6 +197,130 @@ describe('2048 Game Logic', () => {
             // Bug: Returns game over even though board has 1 empty space
             // Expected: null (invalid move) since board isn't full
             expect(result).toBeNull()
+        })
+    })
+
+    describe('move function - property-based tests', () => {
+        // Generator for random tile values (powers of 2)
+        const tileValueArb = fc.constantFrom(2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048)
+
+        // Generator for random positions within grid
+        const positionArb = fc.record({
+            row: fc.integer({ min: 0, max: 3 }),
+            col: fc.integer({ min: 0, max: 3 }),
+        })
+
+        // Generator for random tiles (avoiding duplicates at same position)
+        const tilesArb = fc
+            .array(
+                fc.record({
+                    value: tileValueArb,
+                    position: positionArb,
+                }),
+                { maxLength: 12 },
+            )
+            .map((tiles) => {
+                // Remove duplicate positions
+                const seen = new Set<string>()
+                return tiles
+                    .filter((t) => {
+                        const key = `${t.position.row},${t.position.col}`
+                        if (seen.has(key)) return false
+                        seen.add(key)
+                        return true
+                    })
+                    .map((t) => ({ ...t, state: { type: 'static' as const } }))
+            })
+
+        const directionArb = fc.constantFrom(Direction.up, Direction.down, Direction.left, Direction.right)
+
+        test('moving never creates out-of-bounds positions', () => {
+            fc.assert(
+                fc.property(tilesArb, directionArb, (tiles, dir) => {
+                    const model = createModel(
+                        [
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                        ],
+                        {
+                            scoreDeltas: [],
+                            gameStatus: GameStatus.playing,
+                            bestScore: 0,
+                        },
+                    )
+                    // Override tiles with random ones
+                    const testModel = { ...model, tiles }
+                    const random = createMockRandom([0.5, 0.5])
+                    const result = move(testModel, dir, random)
+
+                    if (!result) return true
+
+                    return result.tiles.every(
+                        (t) => t.position.row >= 0 && t.position.row < 4 && t.position.col >= 0 && t.position.col < 4,
+                    )
+                }),
+            )
+        })
+
+        test('merged tiles always have value equal to double the original', () => {
+            fc.assert(
+                fc.property(tilesArb, directionArb, (tiles, dir) => {
+                    const model = createModel(
+                        [
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                        ],
+                        {
+                            scoreDeltas: [],
+                            gameStatus: GameStatus.playing,
+                            bestScore: 0,
+                        },
+                    )
+                    const testModel = { ...model, tiles }
+                    const random = createMockRandom([0.5, 0.5])
+                    const result = move(testModel, dir, random)
+
+                    if (!result) return true
+
+                    return result.tiles
+                        .filter((t) => t.state.type === 'merged')
+                        .every((t) => {
+                            if (t.state.type !== 'merged') return true
+                            return t.state.value * 2 === t.value
+                        })
+                }),
+            )
+        })
+
+        test('score deltas are always non-negative', () => {
+            fc.assert(
+                fc.property(tilesArb, directionArb, (tiles, dir) => {
+                    const model = createModel(
+                        [
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0],
+                        ],
+                        {
+                            scoreDeltas: [],
+                            gameStatus: GameStatus.playing,
+                            bestScore: 0,
+                        },
+                    )
+                    const testModel = { ...model, tiles }
+                    const random = createMockRandom([0.5, 0.5])
+                    const result = move(testModel, dir, random)
+
+                    if (!result) return true
+
+                    return result.scoreDeltas.every((delta) => delta >= 0)
+                }),
+            )
         })
     })
 })
